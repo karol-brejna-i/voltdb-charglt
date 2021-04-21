@@ -48,9 +48,6 @@ public class ReportQuotaUsage extends VoltProcedure {
 	public static final SQLStmt delOldUsage = new SQLStmt(
 			"DELETE FROM user_usage_table WHERE userid = ? AND sessionid = ?;");
 
-	public static final SQLStmt delOldUsageHouseKeeping = new SQLStmt(
-			"DELETE FROM user_usage_table WHERE userid = ? AND lastdate < DATEADD(MINUTE, -5, NOW);");
-
 	public static final SQLStmt reportFinancialEvent = new SQLStmt(
 			"INSERT INTO user_financial_events (userid,amount,user_txn_id,message) VALUES (?,?,?,?);");
 
@@ -94,7 +91,6 @@ public class ReportQuotaUsage extends VoltProcedure {
 
 		// Delete old usage record
 		voltQueueSQL(delOldUsage, userId, sessionId);
-		voltQueueSQL(delOldUsageHouseKeeping, userId);
 		voltQueueSQL(getUserBalance, sessionId, userId);
 		voltQueueSQL(getCurrrentlyAllocated, userId);
 
@@ -109,8 +105,8 @@ public class ReportQuotaUsage extends VoltProcedure {
 
 		VoltTable[] results2 = voltExecuteSQL();
 
-		VoltTable userBalance = results2[3];
-		VoltTable allocated = results2[4];
+		VoltTable userBalance = results2[2];
+		VoltTable allocated = results2[3];
 
 		// Calculate how much money is actually available...
 

@@ -52,11 +52,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
-import org.voltdb.chargingdemo.calbacks.AddCreditCallback;
-import org.voltdb.chargingdemo.calbacks.ComplainOnErrorCallback;
-
-import org.voltdb.chargingdemo.calbacks.ReportQuotaUsageCallback;
-
+import org.voltdb.chargingdemo.callbacks.AddCreditCallback;
+import org.voltdb.chargingdemo.callbacks.ComplainOnErrorCallback;
+import org.voltdb.chargingdemo.callbacks.ReportQuotaUsageCallback;
 import org.voltdb.client.Client;
 import org.voltdb.client.ClientConfig;
 import org.voltdb.client.ClientFactory;

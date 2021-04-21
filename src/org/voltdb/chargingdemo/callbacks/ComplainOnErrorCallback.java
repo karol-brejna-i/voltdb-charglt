@@ -1,4 +1,4 @@
-package org.voltdb.chargingdemo.calbacks;
+package org.voltdb.chargingdemo.callbacks;
 
 import org.voltdb.chargingdemo.BaseChargingDemo;
 
