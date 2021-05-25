@@ -14,7 +14,6 @@ CREATE table user_table
 
 PARTITION TABLE user_table ON COLUMN userid;
 
-
 create index ut_del on user_table(user_last_seen);
 
 create index ut_loyaltycard on user_table (field(user_json_object, 'loyaltySchemeNumber'));
@@ -34,7 +33,7 @@ PARTITION TABLE user_usage_table ON COLUMN userid;
 CREATE INDEX uut_ix1 ON user_usage_table(userid, lastdate);
 
 create table user_recent_transactions
- MIGRATE TO TARGET user_transactions
+ --MIGRATE TO TARGET user_transactions
 (userid bigint not null 
 ,user_txn_id varchar(128) NOT NULL
 ,txn_time TIMESTAMP DEFAULT NOW  not null 
@@ -49,15 +48,16 @@ PARTITION TABLE user_recent_transactions ON COLUMN userid;
 
 CREATE INDEX urt_del_idx ON user_recent_transactions(userid, txn_time) ;
 
-CREATE INDEX urt_del_idx2 ON user_recent_transactions(userid, txn_time)  WHERE NOT MIGRATING;
+--CREATE INDEX urt_del_idx2 ON user_recent_transactions(userid, txn_time)  WHERE NOT MIGRATING;
 
 CREATE INDEX urt_del_idx3 ON user_recent_transactions(txn_time);
 
-CREATE INDEX urt_del_idx4 ON user_recent_transactions(txn_time) WHERE NOT MIGRATING;
+--CREATE INDEX urt_del_idx4 ON user_recent_transactions(txn_time) WHERE NOT MIGRATING;
 
 CREATE STREAM user_financial_events 
+EXPORT TO TOPIC user_financial_events 
+WITH KEY (userid)
 partition on column userid
-export to target user_financial_events
 (userid bigint not null 
 ,amount bigint not null
 ,user_txn_id varchar(128) not null
@@ -83,7 +83,6 @@ from user_usage_table
 group by  userid,  sessionid;
 
 create index uss_ix1 on users_sessions (how_many) WHERE how_many > 1;
-
 
 create view recent_activity_out as
 select TRUNCATE(MINUTE,txn_time) txn_time
@@ -134,10 +133,7 @@ PARTITION ON TABLE user_table COLUMN userid
 as 
 select * from user_recent_transactions where userid = ? ORDER BY txn_time, user_txn_id;
 
-
 create procedure FindByLoyaltyCard as select * from user_table where field(user_json_object, 'loyaltySchemeNumber') = CAST(? AS VARCHAR);
-
-
 
 CREATE PROCEDURE ShowCurrentAllocations__promBL AS
 BEGIN
