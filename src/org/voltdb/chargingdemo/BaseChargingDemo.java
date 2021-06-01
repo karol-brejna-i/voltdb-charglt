@@ -368,6 +368,8 @@ public abstract class BaseChargingDemo {
 			int globalQueryFreqSeconds, Client mainClient)
 			throws InterruptedException, IOException, NoConnectionsException, ProcCallException {
 
+	    final long pid = getPid();
+	    
 		Random r = new Random();
 
 		UserTransactionState[] users = new UserTransactionState[userCount];
@@ -422,7 +424,8 @@ public abstract class BaseChargingDemo {
 					AddCreditCallback addCreditCallback = new AddCreditCallback(users[randomuser]);
 
 					mainClient.callProcedure(addCreditCallback, "AddCredit", randomuser, extraCredit,
-							"AddCreditOnShortage" + "_" + System.currentTimeMillis());
+							"AddCreditOnShortage_" + pid  +"_" + System.currentTimeMillis());
+			
 
 				} else {
 
@@ -435,7 +438,7 @@ public abstract class BaseChargingDemo {
 
 					mainClient.callProcedure(reportUsageCallback, "ReportQuotaUsage", randomuser, unitsUsed,
 							unitsWanted, users[randomuser].sessionId,
-							"ReportQuotaUsage" + "_" + System.currentTimeMillis());
+							"ReportQuotaUsage_"  + pid + "_" + System.currentTimeMillis());
 
 				}
 			}
@@ -474,7 +477,11 @@ public abstract class BaseChargingDemo {
 		return (long) tps;
 	}
 
-	/**
+	private static long getPid() {
+        return ProcessHandle.current().pid();
+    }
+
+    /**
 	 * 
 	 * Run a key value store benchmark for userCount users at tpMs transactions per
 	 * millisecond and with deltaProportion records sending the entire record.
