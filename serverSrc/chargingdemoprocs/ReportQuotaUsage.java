@@ -55,7 +55,7 @@ public class ReportQuotaUsage extends VoltProcedure {
 			+ "(userid, allocated_amount,sessionid, lastdate) VALUES (?,?,?,NOW);");
 	
     public static final SQLStmt deleteOldTxns = new SQLStmt("DELETE FROM user_recent_transactions "
-            + "WHERE userid = ? AND txn_time < DATEADD(MINUTE,?,NOW);");
+            + "WHERE userid = ? AND txn_time < DATEADD(SECOND,?,NOW);");
 	    
 	   
 
@@ -152,7 +152,7 @@ public class ReportQuotaUsage extends VoltProcedure {
 	
 		voltQueueSQL(getUserBalance, sessionId, userId);
 		voltQueueSQL(getCurrrentlyAllocated, userId);
-		voltQueueSQL(deleteOldTxns,userId,5);
+		voltQueueSQL(deleteOldTxns,userId,10);
 		
 		return voltExecuteSQL();
 
