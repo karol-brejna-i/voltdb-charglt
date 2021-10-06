@@ -152,7 +152,7 @@ public class ReportQuotaUsage extends VoltProcedure {
 	
 		voltQueueSQL(getUserBalance, sessionId, userId);
 		voltQueueSQL(getCurrrentlyAllocated, userId);
-		voltQueueSQL(deleteOldTxns,userId,10);
+		voltQueueSQL(deleteOldTxns,userId,-10);
 		
 		return voltExecuteSQL();
 
