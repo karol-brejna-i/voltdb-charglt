@@ -1,5 +1,7 @@
 package chargingdemoprocs;
 
+import java.util.Date;
+
 /* This file is part of VoltDB.
  * Copyright (C) 2008-2020 VoltDB Inc.
  *
@@ -26,6 +28,7 @@ package chargingdemoprocs;
 import org.voltdb.SQLStmt;
 import org.voltdb.VoltProcedure;
 import org.voltdb.VoltTable;
+import org.voltdb.types.TimestampType;
 
 public class ReportQuotaUsage extends VoltProcedure {
 
@@ -34,8 +37,13 @@ public class ReportQuotaUsage extends VoltProcedure {
 	public static final SQLStmt getUser = new SQLStmt(
 			"SELECT userid FROM user_table WHERE userid = ?;");
 
-	public static final SQLStmt getTxn = new SQLStmt("SELECT txn_time FROM user_recent_transactions "
-			+ "WHERE userid = ? AND user_txn_id = ?;");
+    public static final SQLStmt getOldestTxn = new SQLStmt("SELECT user_txn_id, txn_time "
+            + "FROM user_recent_transactions "
+            + "WHERE userid = ? "
+            + "ORDER BY txn_time LIMIT 1;");
+
+    public static final SQLStmt getTxn = new SQLStmt("SELECT txn_time FROM user_recent_transactions "
+            + "WHERE userid = ? AND user_txn_id = ?;");
 
 	public static final SQLStmt getUserBalance = new SQLStmt("SELECT balance, CAST(? AS BIGINT) sessionid FROM user_balance WHERE userid = ?;");
 
@@ -54,10 +62,11 @@ public class ReportQuotaUsage extends VoltProcedure {
 	public static final SQLStmt createAllocation = new SQLStmt("INSERT INTO user_usage_table "
 			+ "(userid, allocated_amount,sessionid, lastdate) VALUES (?,?,?,NOW);");
 	
-    public static final SQLStmt deleteOldTxns = new SQLStmt("DELETE FROM user_recent_transactions "
-            + "WHERE userid = ? AND txn_time < DATEADD(SECOND,?,NOW);");
+    public static final SQLStmt deleteOldTxn = new SQLStmt("DELETE FROM user_recent_transactions "
+            + "WHERE userid = ? AND user_txn_id = ?;");
+
+    private static final long FIVE_MINUTES_IN_MS = 1000 * 60 * 5;
 	    
-	   
 
 	// @formatter:on
 
@@ -72,22 +81,27 @@ public class ReportQuotaUsage extends VoltProcedure {
 
 		voltQueueSQL(getUser, userId);
 		voltQueueSQL(getTxn, userId, txnId);
+        voltQueueSQL(getOldestTxn, userId);
 
 		VoltTable[] results1 = voltExecuteSQL();
+        VoltTable userTable = results1[0];
+        VoltTable sameTxnTable = results1[1];
+        VoltTable oldTxnTable = results1[2];
+		
 
 		// Sanity check: Does this user exist?
-		if (!results1[0].advanceRow()) {
+		if (!userTable.advanceRow()) {
 			throw new VoltAbortException("User " + userId + " does not exist");
 		}
 
 		// Sanity Check: Is this a re-send of a transaction we've already done?
-		if (results1[1].advanceRow()) {
+		if (sameTxnTable.advanceRow()) {
 			this.setAppStatusCode(ReferenceData.STATUS_TXN_ALREADY_HAPPENED);
 			this.setAppStatusString(
 					"Event already happened at " + results1[1].getTimestampAsTimestamp("txn_time").toString());
 			return voltExecuteSQL(true);
 		}
-
+		
 		long amountSpent = unitsUsed * -1;
 		String decision = "Spent " + amountSpent;
 
@@ -97,7 +111,7 @@ public class ReportQuotaUsage extends VoltProcedure {
 		// Delete old usage record
 		voltQueueSQL(delOldUsage, userId, sessionId);
 		voltQueueSQL(getUserBalance, sessionId, userId);
-		voltQueueSQL(getCurrrentlyAllocated, userId);
+        voltQueueSQL(getCurrrentlyAllocated, userId);
 
 		if (unitsWanted == 0) {
 			voltQueueSQL(addTxn, userId, txnId, 0,amountSpent, decision,sessionId);
@@ -152,8 +166,17 @@ public class ReportQuotaUsage extends VoltProcedure {
 	
 		voltQueueSQL(getUserBalance, sessionId, userId);
 		voltQueueSQL(getCurrrentlyAllocated, userId);
-		voltQueueSQL(deleteOldTxns,userId,-10);
 		
+        // Delete oldest record if old enough
+        if (oldTxnTable.advanceRow()) {
+            TimestampType oldestTxn = oldTxnTable.getTimestampAsTimestamp("txn_time");
+            
+            if (oldestTxn.asExactJavaDate().before(new Date(getTransactionTime().getTime() - FIVE_MINUTES_IN_MS))) {
+                String oldestTxnId = oldTxnTable.getString("user_txn_id");
+                voltQueueSQL(deleteOldTxn, userId, oldestTxnId);
+            }
+         }
+        
 		return voltExecuteSQL();
 
 	}
