@@ -40,7 +40,7 @@ public class ReportQuotaUsage extends VoltProcedure {
     public static final SQLStmt getOldestTxn = new SQLStmt("SELECT user_txn_id, txn_time "
             + "FROM user_recent_transactions "
             + "WHERE userid = ? "
-            + "ORDER BY txn_time LIMIT 1;");
+            + "ORDER BY txn_time,userid,user_txn_id LIMIT 1;");
 
     public static final SQLStmt getTxn = new SQLStmt("SELECT txn_time FROM user_recent_transactions "
             + "WHERE userid = ? AND user_txn_id = ?;");
