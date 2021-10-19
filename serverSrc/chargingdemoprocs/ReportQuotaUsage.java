@@ -37,9 +37,10 @@ public class ReportQuotaUsage extends VoltProcedure {
 	public static final SQLStmt getUser = new SQLStmt(
 			"SELECT userid FROM user_table WHERE userid = ?;");
 
-    public static final SQLStmt getOldestTxn = new SQLStmt("SELECT user_txn_id, txn_time "
+    public static final SQLStmt removeOldestTransaction = new SQLStmt("DELETE " 
             + "FROM user_recent_transactions "
             + "WHERE userid = ? "
+            + "AND txn_time < DATEADD(MILLISECOND,?,NOW)"
             + "ORDER BY txn_time,userid,user_txn_id LIMIT 1;");
 
     public static final SQLStmt getTxn = new SQLStmt("SELECT txn_time FROM user_recent_transactions "
@@ -81,13 +82,12 @@ public class ReportQuotaUsage extends VoltProcedure {
 
 		voltQueueSQL(getUser, userId);
 		voltQueueSQL(getTxn, userId, txnId);
-        voltQueueSQL(getOldestTxn, userId);
+        voltQueueSQL(removeOldestTransaction, userId,FIVE_MINUTES_IN_MS);
 
 		VoltTable[] results1 = voltExecuteSQL();
         VoltTable userTable = results1[0];
         VoltTable sameTxnTable = results1[1];
-        VoltTable oldTxnTable = results1[2];
-		
+ 		
 
 		// Sanity check: Does this user exist?
 		if (!userTable.advanceRow()) {
@@ -166,17 +166,7 @@ public class ReportQuotaUsage extends VoltProcedure {
 	
 		voltQueueSQL(getUserBalance, sessionId, userId);
 		voltQueueSQL(getCurrrentlyAllocated, userId);
-		
-        // Delete oldest record if old enough
-        if (oldTxnTable.advanceRow()) {
-            TimestampType oldestTxn = oldTxnTable.getTimestampAsTimestamp("txn_time");
-            
-            if (oldestTxn.asExactJavaDate().before(new Date(getTransactionTime().getTime() - FIVE_MINUTES_IN_MS))) {
-                String oldestTxnId = oldTxnTable.getString("user_txn_id");
-                voltQueueSQL(deleteOldTxn, userId, oldestTxnId);
-            }
-         }
-        
+		        
 		return voltExecuteSQL();
 
 	}
