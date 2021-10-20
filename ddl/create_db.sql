@@ -42,7 +42,7 @@ create table user_recent_transactions
 ,spent_amount bigint 
 ,purpose  varchar(128)
 ,primary key (userid, user_txn_id))
-USING TTL 600 SECONDS ON COLUMN txn_time BATCH_SIZE 10000 MAX_FREQUENCY 50;
+USING TTL 3600 SECONDS ON COLUMN txn_time BATCH_SIZE 200 MAX_FREQUENCY 1;
 
 PARTITION TABLE user_recent_transactions ON COLUMN userid;
 
