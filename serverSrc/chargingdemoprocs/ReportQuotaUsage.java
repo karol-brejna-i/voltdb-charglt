@@ -1,6 +1,7 @@
 package chargingdemoprocs;
 
 import java.util.Date;
+import java.util.Random;
 
 /* This file is part of VoltDB.
  * Copyright (C) 2008-2020 VoltDB Inc.
@@ -32,17 +33,16 @@ import org.voltdb.types.TimestampType;
 
 public class ReportQuotaUsage extends VoltProcedure {
 
-	// @formatter:off
+    // @formatter:off
 
 	public static final SQLStmt getUser = new SQLStmt(
 			"SELECT userid FROM user_table WHERE userid = ?;");
 
-    public static final SQLStmt removeOldestTransaction = new SQLStmt("DELETE " 
-	            + "FROM user_recent_transactions "
-	            + "WHERE userid = ? "
-	            + "AND SINCE_EPOCH(Second,txn_time) < SINCE_EPOCH(Second,DATEADD(MILLISECOND, ?,NOW))"
-	            + "ORDER BY txn_time,userid,user_txn_id LIMIT 1;");
-
+    
+    public static final SQLStmt removeOldestTransactionPart1 = new SQLStmt("select txn_time from user_recent_transactions where userid = ? order by userid, txn_time limit 1;");
+    
+    public static final SQLStmt removeOldestTransactionPart2 = new SQLStmt("DELETE FROM user_recent_transactions WHERE userid = ? and txn_time =?;");
+        
     public static final SQLStmt getTxn = new SQLStmt("SELECT txn_time FROM user_recent_transactions "
             + "WHERE userid = ? AND user_txn_id = ?;");
 
@@ -62,110 +62,120 @@ public class ReportQuotaUsage extends VoltProcedure {
 
 	public static final SQLStmt createAllocation = new SQLStmt("INSERT INTO user_usage_table "
 			+ "(userid, allocated_amount,sessionid, lastdate) VALUES (?,?,?,NOW);");
-	
-    private static final long FIVE_MINUTES_AGO_IN_MS = 1000 * 60 * -5;
-	    
+
+	private static final long FIVE_MINUTES_AGO_IN_MS = 1000 * 60 * -5;
+
 
 	// @formatter:on
 
-	public VoltTable[] run(long userId, int unitsUsed, int unitsWanted, long inputSessionId, String txnId)
-			throws VoltAbortException {
+    public VoltTable[] run(long userId, int unitsUsed, int unitsWanted, long inputSessionId, String txnId)
+            throws VoltAbortException {
 
-		long sessionId = inputSessionId;
+        long sessionId = inputSessionId;
 
-		if (sessionId <= 0) {
-			sessionId = this.getUniqueId();
-		}
+        if (sessionId <= 0) {
+            sessionId = this.getUniqueId();
+        }
 
-		voltQueueSQL(getUser, userId);
-		voltQueueSQL(getTxn, userId, txnId);
-        voltQueueSQL(removeOldestTransaction, userId, FIVE_MINUTES_AGO_IN_MS);
+        voltQueueSQL(getUser, userId);
+        voltQueueSQL(getTxn, userId, txnId);
+        voltQueueSQL(removeOldestTransactionPart1, userId);
 
-		VoltTable[] results1 = voltExecuteSQL();
+        VoltTable[] results1 = voltExecuteSQL();
         VoltTable userTable = results1[0];
         VoltTable sameTxnTable = results1[1];
         VoltTable oldTxnTable = results1[2];
- 		
 
-		// Sanity check: Does this user exist?
-		if (!userTable.advanceRow()) {
-			throw new VoltAbortException("User " + userId + " does not exist");
-		}
+        if (oldTxnTable.advanceRow()) {
 
-		// Sanity Check: Is this a re-send of a transaction we've already done?
-		if (sameTxnTable.advanceRow()) {
-			this.setAppStatusCode(ReferenceData.STATUS_TXN_ALREADY_HAPPENED);
-			this.setAppStatusString(
-					"Event already happened at " + results1[1].getTimestampAsTimestamp("txn_time").toString());
-			return voltExecuteSQL(true);
-		}
-		
-		long amountSpent = unitsUsed * -1;
-		String decision = "Spent " + amountSpent;
+            TimestampType oldest = oldTxnTable.getTimestampAsTimestamp("txn_time");
 
-		// Update balance
-		voltQueueSQL(reportFinancialEvent, userId, amountSpent, txnId, "Spent " + amountSpent);
+            Date cutoff = new Date(getTransactionTime().getTime() - FIVE_MINUTES_AGO_IN_MS);
+            if (oldest.asApproximateJavaDate().before(cutoff)) {
+                voltQueueSQL(removeOldestTransactionPart2, userId, oldest);
+                voltExecuteSQL();
+            }
+        }
 
-		// Delete old usage record
-		voltQueueSQL(delOldUsage, userId, sessionId);
-		voltQueueSQL(getUserBalance, sessionId, userId);
+        // Sanity check: Does this user exist?
+        if (!userTable.advanceRow()) {
+            throw new VoltAbortException("User " + userId + " does not exist");
+        }
+
+        // Sanity Check: Is this a re-send of a transaction we've already done?
+        if (sameTxnTable.advanceRow()) {
+            this.setAppStatusCode(ReferenceData.STATUS_TXN_ALREADY_HAPPENED);
+            this.setAppStatusString(
+                    "Event already happened at " + results1[1].getTimestampAsTimestamp("txn_time").toString());
+            return voltExecuteSQL(true);
+        }
+
+        long amountSpent = unitsUsed * -1;
+        String decision = "Spent " + amountSpent;
+
+        // Update balance
+        voltQueueSQL(reportFinancialEvent, userId, amountSpent, txnId, "Spent " + amountSpent);
+
+        // Delete old usage record
+        voltQueueSQL(delOldUsage, userId, sessionId);
+        voltQueueSQL(getUserBalance, sessionId, userId);
         voltQueueSQL(getCurrrentlyAllocated, userId);
 
-		if (unitsWanted == 0) {
-			voltQueueSQL(addTxn, userId, txnId, 0,amountSpent, decision,sessionId);
-			voltQueueSQL(getUserBalance, sessionId, userId);
-			voltQueueSQL(getCurrrentlyAllocated, userId);
+        if (unitsWanted == 0) {
+            voltQueueSQL(addTxn, userId, txnId, 0, amountSpent, decision, sessionId);
+            voltQueueSQL(getUserBalance, sessionId, userId);
+            voltQueueSQL(getCurrrentlyAllocated, userId);
 
-			this.setAppStatusCode(ReferenceData.STATUS_OK);
-			return voltExecuteSQL(true);
-		}
+            this.setAppStatusCode(ReferenceData.STATUS_OK);
+            return voltExecuteSQL(true);
+        }
 
-		VoltTable[] results2 = voltExecuteSQL();
+        VoltTable[] results2 = voltExecuteSQL();
 
-		VoltTable userBalance = results2[2];
-		VoltTable allocated = results2[3];
+        VoltTable userBalance = results2[2];
+        VoltTable allocated = results2[3];
 
-		// Calculate how much money is actually available...
+        // Calculate how much money is actually available...
 
-		userBalance.advanceRow();
-		long availableCredit = userBalance.getLong("balance");
+        userBalance.advanceRow();
+        long availableCredit = userBalance.getLong("balance");
 
-		if (allocated.advanceRow()) {
-			availableCredit = availableCredit - allocated.getLong("allocated_amount");
-		}
+        if (allocated.advanceRow()) {
+            availableCredit = availableCredit - allocated.getLong("allocated_amount");
+        }
 
-		long amountApproved = 0;
-		
-		if (availableCredit < 0) {
+        long amountApproved = 0;
 
-			decision = decision + "; Negative balance: " + availableCredit;
-			this.setAppStatusCode(ReferenceData.STATUS_NO_MONEY);
+        if (availableCredit < 0) {
 
-		} else if (unitsWanted > availableCredit) {
+            decision = decision + "; Negative balance: " + availableCredit;
+            this.setAppStatusCode(ReferenceData.STATUS_NO_MONEY);
 
-			amountApproved  = availableCredit;
-			decision = decision + "; Allocated " + availableCredit + " units of " + unitsWanted + " asked for";
-			this.setAppStatusCode(ReferenceData.STATUS_SOME_UNITS_ALLOCATED);
+        } else if (unitsWanted > availableCredit) {
 
-		} else {
-			
-			amountApproved  = unitsWanted;
-			decision = decision + "; Allocated " + unitsWanted;
-			this.setAppStatusCode(ReferenceData.STATUS_ALL_UNITS_ALLOCATED);
-	
-		}
+            amountApproved = availableCredit;
+            decision = decision + "; Allocated " + availableCredit + " units of " + unitsWanted + " asked for";
+            this.setAppStatusCode(ReferenceData.STATUS_SOME_UNITS_ALLOCATED);
 
-		voltQueueSQL(createAllocation, userId, amountApproved, sessionId);
-		
-     	this.setAppStatusString(decision);
-		// Note that transaction is now 'official'
-		        
-		voltQueueSQL(addTxn, userId, txnId, amountApproved, amountSpent, decision,sessionId);
-		voltQueueSQL(getUserBalance, sessionId, userId);
-		voltQueueSQL(getCurrrentlyAllocated, userId);
-		        
-		return voltExecuteSQL();
+        } else {
 
-	}
+            amountApproved = unitsWanted;
+            decision = decision + "; Allocated " + unitsWanted;
+            this.setAppStatusCode(ReferenceData.STATUS_ALL_UNITS_ALLOCATED);
+
+        }
+
+        voltQueueSQL(createAllocation, userId, amountApproved, sessionId);
+
+        this.setAppStatusString(decision);
+        // Note that transaction is now 'official'
+
+        voltQueueSQL(addTxn, userId, txnId, amountApproved, amountSpent, decision, sessionId);
+        voltQueueSQL(getUserBalance, sessionId, userId);
+        voltQueueSQL(getCurrrentlyAllocated, userId);
+
+        return voltExecuteSQL();
+
+    }
 
 }
