@@ -46,7 +46,7 @@ USING TTL 3600 SECONDS ON COLUMN txn_time BATCH_SIZE 200 MAX_FREQUENCY 1;
 
 PARTITION TABLE user_recent_transactions ON COLUMN userid;
 
-CREATE INDEX urt_del_idx ON user_recent_transactions(userid, txn_time) ;
+CREATE INDEX urt_del_idx ON user_recent_transactions(userid, txn_time,user_txn_id) ;
 
 --CREATE INDEX urt_del_idx2 ON user_recent_transactions(userid, txn_time)  WHERE NOT MIGRATING;
 

@@ -37,12 +37,13 @@ public class ReportQuotaUsage extends VoltProcedure {
 
 	public static final SQLStmt getUser = new SQLStmt(
 			"SELECT userid FROM user_table WHERE userid = ?;");
-
     
-    public static final SQLStmt removeOldestTransactionPart1 = new SQLStmt("select txn_time from user_recent_transactions where userid = ? order by userid, txn_time limit 1;");
-    
-    public static final SQLStmt removeOldestTransactionPart2 = new SQLStmt("DELETE FROM user_recent_transactions WHERE userid = ? and txn_time =?;");
-        
+	  public static final SQLStmt removeOldestTransaction = new SQLStmt("DELETE " 
+              + "FROM user_recent_transactions "
+              + "WHERE userid = ? "
+              + "AND txn_time < DATEADD(MINUTE, -5,NOW) "
+              + "ORDER BY userid, txn_time, user_txn_id LIMIT 2;");
+	  
     public static final SQLStmt getTxn = new SQLStmt("SELECT txn_time FROM user_recent_transactions "
             + "WHERE userid = ? AND user_txn_id = ?;");
 
@@ -79,24 +80,12 @@ public class ReportQuotaUsage extends VoltProcedure {
 
         voltQueueSQL(getUser, userId);
         voltQueueSQL(getTxn, userId, txnId);
-        voltQueueSQL(removeOldestTransactionPart1, userId);
+        voltQueueSQL(removeOldestTransaction, userId);
 
         VoltTable[] results1 = voltExecuteSQL();
         VoltTable userTable = results1[0];
         VoltTable sameTxnTable = results1[1];
-        VoltTable oldTxnTable = results1[2];
-
-        if (oldTxnTable.advanceRow()) {
-
-            TimestampType oldest = oldTxnTable.getTimestampAsTimestamp("txn_time");
-
-            Date cutoff = new Date(getTransactionTime().getTime() - FIVE_MINUTES_AGO_IN_MS);
-            if (oldest.asApproximateJavaDate().before(cutoff)) {
-                voltQueueSQL(removeOldestTransactionPart2, userId, oldest);
-                voltExecuteSQL();
-            }
-        }
-
+ 
         // Sanity check: Does this user exist?
         if (!userTable.advanceRow()) {
             throw new VoltAbortException("User " + userId + " does not exist");
