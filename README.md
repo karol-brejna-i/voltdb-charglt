@@ -180,7 +180,7 @@ The blue line is the 99th Percentile latency for [ReportQuotaUsage](https://gith
 
 The Blue dashed line below is the average latency for  [ReportQuotaUsage](https://github.com/srmadscience/voltdb-charglt/blob/master/serverSrc/chargingdemoprocs/ReportQuotaUsage.java), and shows that if you didn&#39;t care about the 99th percentile and were willing to work with average latency instead, you could probably get around 25% more TPMS out of the system.
 
-The Green lines show us that the profile of [AddCredit](https://github.com/srmadscience/voltdb-charglt/tree/master/src/chargingdemoprocs/AddCredit.java) is pretty much the same.
+The Green lines show us that the profile of [AddCredit](https://github.com/srmadscience/voltdb-charglt/blob/master/serverSrc/chargingdemoprocs/AddCredit.java) is pretty much the same.
 
 In practical terms this means we could  easily meet the requested workload of 166,666 TPS.
 
