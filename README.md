@@ -44,7 +44,7 @@ Although this demo doesn&#39;t include support for failovers, the schema does. I
 
 **Downstream Systems**
 
-In addition to allowing or denying access we need to tell a downstream back office system when money is spent or added. This needs to be accurate and up to date. In our demo we implement this using an [Export Stream](https://docs.voltactivedata.com/UsingVoltDB/ChapExport.php) called &#39;user\_financial\_events&#39;, which goes to a logical destination called &#39;finevent&#39;. &#39;Finevent&#39; can be [Kafka](https://docs.voltactivedata.com/UsingVoltDB/ExportToKafka.php), [Kinesis](https://github.com/VoltDB/export-kinesis), [JDBC](https://docs.voltactivedata.com/UsingVoltDB/ExportToJdbc.php), etc.
+In addition to allowing or denying access we need to tell a downstream back office system when money is spent or added. This needs to be accurate and up to date. In our demo we implement this using an [Export Stream](https://docs.voltactivedata.com/UsingVoltDB/ChapExport.php) called &#39;user\_financial\_events&#39;, which goes to a logical destination called &#39;finevent&#39;. &#39;Finevent&#39; can be [Kafka](https://docs.voltactivedata.com/v7docs/UsingVoltDB/ExportToKafka.php), [JDBC](https://docs.voltactivedata.com/v7docs/UsingVoltDB/ExportToJdbc.php), etc.
 
 **Value at Risk calculations**
 
