@@ -128,7 +128,7 @@ Instructions for how to do this are [here](https://docs.voltactivedata.com/Admin
 
 #### Obtain the Demo
 
-git clone https://github.com/srmadscience/voltdb-charglt/voltdb-charglt.git
+git clone https://github.com/srmadscience/voltdb-charglt
 
 #### Create the schema
 
