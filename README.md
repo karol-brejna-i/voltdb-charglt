@@ -103,7 +103,7 @@ We used a cluster with the following configuration:
 
 - 4 x AWS z1d.3xlarge nodes (1 client, 3 for the server)
 - Command Logs and Snapshots on internal SSD drive
-- [K factor](https://docs.voltactivedata.com/UsingVoltDB/KSafeEnable.php)of &#39;1&#39;.
+- [K factor](https://docs.voltactivedata.com/UsingVoltDB/KSafeEnable.php) of &#39;1&#39;.
 - Default settings for [command log flush interval](https://docs.voltactivedata.com/UsingVoltDB/CmdLogConfig.php).
 - Sitesperhost set to default value of 8.
 - 20,000,000 users
@@ -134,7 +134,7 @@ git clone https://github.com/srmadscience/voltdb-charglt/voltdb-charglt.git
 
 cd voltdb-charglt/ddl
 
-sqlcmd --servers=vdb1 \&lt; [db.sql](https://github.com/srmadscience/voltdb-charglt/blob/master/ddl/db.sql)
+sqlcmd --servers=vdb1 &lt; [create_db.sql](https://github.com/srmadscience/voltdb-charglt/blob/master/ddl/create_db.sql)
 
 Note that this code loads a jar file from voltdb-chargingdemo/jars.
 
