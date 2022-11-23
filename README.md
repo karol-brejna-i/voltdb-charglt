@@ -161,9 +161,9 @@ java -jar ../jars/voltdb-chargingdemo-client.jar vdb1,vdb2,vdb3 1000000 1000000 
 
 
 
-To make things easier we use a file called &quot;[runtest.sh](https://github.com/srmadscience/voltdb-charglt/blob/master/scripts/runtest.sh)&quot;, which creates the users and then runs the workload at increasing intervals and puts the results in a file. Note that runtest.sh will need to be tweaked in order for you to use it.
+To make things easier we use a file called &quot;[runbenchmark.sh](https://github.com/srmadscience/voltdb-charglt/blob/master/scripts/runbenchmark.sh)&quot;, which creates the users and then runs the workload at increasing intervals and puts the results in a file. Note that runbenchmark.sh will need to be tweaked in order for you to use it.
 
-&quot;[runtest.sh](https://github.com/srmadscience/voltdb-charglt/blob/master/scripts/runtest.sh)&quot; can be persuaded to do a series of runs at increasing TPS levels and put the results in a file for later analysis, which is what we did.
+&quot;[runbenchmark.sh](https://github.com/srmadscience/voltdb-charglt/blob/master/scripts/runbenchmark.sh)&quot; can be persuaded to do a series of runs at increasing TPS levels and put the results in a file for later analysis, which is what we did.
 
 ### Sample Results
 
