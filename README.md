@@ -200,4 +200,4 @@ Each request  can and does issue multiple SQL statements. For example &quot;[Rep
 
 ## Conclusion
 
-In this blog post and accompanying demo I&#39;ve shown that VoltDB can be used to build very high performance ACID compliant applications that provide the benefits of a traditional RDBMS and run in a 100% virtualized cloud environment while providing high availability.
+Volt Active Data can be used to build very high performance ACID compliant applications that provide the benefits of a traditional RDBMS and run in a 100% virtualized cloud environment while providing high availability.
