@@ -1,16 +1,16 @@
-https://github.com/srmadscience/voltdb-chargingdemo# Charging Demo: A non-trivial telco focused example
+# Charging Demo: A non-trivial telco focused example
 
 ## Introduction
 
-In this post I&#39;d like to highlight [voltdb-chargingdemo](https://github.com/srmadscience/voltdb-chargingdemo/tree/master/src), which I&#39;ve recently made available on bitbucket. Most demos are designed to be as simplistic as possible. I&#39;ve always found that frustrating, as anyone who has ever written a real world application knows that what takes two lines in a demo can take about 50 in reality. With that in mind, I wrote [voltdb-chargingdemo](https://github.com/srmadscience/voltdb-chargingdemo/tree/master/src), which is intended to demonstrate how we can help in scenarios such as telco where users are working with shared and finite resources while meeting SLAs, such as SMS messages or bandwidth. Instead of simplifying things to the point of absurdity, it tries to be realistic yet still comprehensible to outsiders.
+In this post I&#39;d like to highlight [voltdb-charglt](https://github.com/srmadscience/voltdb-charglt/tree/master/src), which I&#39;ve recently made available on github. Most demos are designed to be as simplistic as possible. I&#39;ve always found that frustrating, as anyone who has ever written a real world application knows that what takes two lines in a demo can take about 50 in reality. With that in mind, I wrote [voltdb-charglt](https://github.com/srmadscience/voltdb-charglt/tree/master/src), which is intended to demonstrate how we can help in scenarios such as telco where users are working with shared and finite resources while meeting SLAs, such as SMS messages or bandwidth. Instead of simplifying things to the point of absurdity, it tries to be realistic yet still comprehensible to outsiders.
 
 My own background is in telco, and the demo is a drastically simplified representation of what&#39;s known as a &#39;[charging](https://portal.3gpp.org/desktopmodules/Specifications/SpecificationDetails.aspx?specificationId=1896)&#39; system. Every prepaid cell phone uses one of these - it decides what the user can do, how long they can do it for, and tells downstream systems what was used when the activity finishes. In such a system the following activities happen:
 
-1. &quot;[Provision](https://github.com/srmadscience/voltdb-chargingdemo/tree/master/src/chargingdemoprocs/UpsertUser.java)&quot; a user.  This happens once, and is the part where they enter the number on your sim card into the computer at the store so the phone systems knows that that sim card is now 1-510-555-1212 or whatever your number is.
+1. &quot;[Provision](https://github.com/srmadscience/voltdb-charglt/tree/master/src/chargingdemoprocs/UpsertUser.java)&quot; a user.  This happens once, and is the part where they enter the number on your sim card into the computer at the store so the phone systems knows that that sim card is now 1-510-555-1212 or whatever your number is.
 
-1. &quot;[Add Credit](https://github.com/srmadscience/voltdb-chargingdemo/tree/master/src/chargingdemoprocs/AddCredit.java)&quot;. This is when a third party system tells the phone company&#39;s computer that you have just gone to a recharging center and added US$20 in credit.
+1. &quot;[Add Credit](https://github.com/srmadscience/voltdb-charglt/tree/master/src/chargingdemoprocs/AddCredit.java)&quot;. This is when a third party system tells the phone company&#39;s computer that you have just gone to a recharging center and added US$20 in credit.
 
-1. &quot;[Report Usage and Reserve More](https://github.com/srmadscience/voltdb-chargingdemo/tree/master/src/chargingdemoprocs/ReportQuotaUsage.java)&quot;. In real life this is several steps, but to keep things simple we use one. In this the phone system tells VoltDB how much of a resource you&#39;ve used (&quot;Usage&quot;), and how much they think you&#39;ll need over the next 30 seconds or so (&quot;Reserve&quot;). Normal practice is to hand over a larger chunk than we think you&#39;ll need, as if you run out we may have to freeze your ability to call or internet activity, depending on your usage, until we get more. For a given user this is happening about once every 30 seconds, for each activity.
+1. &quot;[Report Usage and Reserve More](https://github.com/srmadscience/voltdb-charglt/tree/master/src/chargingdemoprocs/ReportQuotaUsage.java)&quot;. In real life this is several steps, but to keep things simple we use one. In this the phone system tells VoltDB how much of a resource you&#39;ve used (&quot;Usage&quot;), and how much they think you&#39;ll need over the next 30 seconds or so (&quot;Reserve&quot;). Normal practice is to hand over a larger chunk than we think you&#39;ll need, as if you run out we may have to freeze your ability to call or internet activity, depending on your usage, until we get more. For a given user this is happening about once every 30 seconds, for each activity.
 
 ## The challenges
 
@@ -40,7 +40,7 @@ Like any real world production code we need to be sure that the users and produc
 
 **High Availability**
 
-Although this demo doesn&#39;t include support for failovers (I&#39;m working on a HA/XDCR demo) the schema does. In any HA scenario you have to cope with a situation where you send a request to the database and then don&#39;t know whether it worked or not, as  you didn&#39;t get a message back. Given that when we report usage we&#39;re spending customer&#39;s money we can never, ever get into a situation where we charge them twice. This means that each call to &quot;Add Credit&quot; or &quot;Report Usage and Reserve More&quot; needs to include a unique identifier for the transaction, and the system needs to keep a list of successful transactions for long enough to make sure it&#39;s not a duplicate.
+Although this demo doesn&#39;t include support for failovers, the schema does. In any HA scenario you have to cope with a situation where you send a request to the database and then don&#39;t know whether it worked or not, as  you didn&#39;t get a message back. Given that when we report usage we&#39;re spending customer&#39;s money we can never, ever get into a situation where we charge them twice. This means that each call to &quot;Add Credit&quot; or &quot;Report Usage and Reserve More&quot; needs to include a unique identifier for the transaction, and the system needs to keep a list of successful transactions for long enough to make sure it&#39;s not a duplicate.
 
 **Downstream Systems**
 
@@ -73,7 +73,7 @@ Note that in Use Cases where latency spikes are OK, scaling is usually a lot eas
 
 **Arbitrary Payload**
 
-We also sometimes have to store device session data, which is presented to us as a JSON object. While the code allows you to [read, softlock](https://github.com/srmadscience/voltdb-chargingdemo/tree/master/src/chargingdemoprocs/GetAndLockUser.java) and [update](https://github.com/srmadscience/voltdb-chargingdemo/tree/master/src/chargingdemoprocs/UpdateLockedUser.java) this JSON it isn&#39;t currently part of the demo.
+We also sometimes have to store device session data, which is presented to us as a JSON object. While the code allows you to [read, softlock](https://github.com/srmadscience/voltdb-charglt/tree/master/src/chargingdemoprocs/GetAndLockUser.java) and [update](https://github.com/srmadscience/voltdb-charglt/tree/master/src/chargingdemoprocs/UpdateLockedUser.java) this JSON it isn&#39;t currently part of the demo.
 
 ## Our Schema
 
@@ -107,13 +107,13 @@ We used a cluster with the following configuration:
 - Default settings for [command log flush interval](https://docs.voltdb.com/UsingVoltDB/CmdLogConfig.php).
 - Sitesperhost set to default value of 8.
 - 20,000,000 users
-- Use the script [sh](https://github.com/srmadscience/voltdb-chargingdemo/blob/master/scripts/runtest.sh) to run 5 instances at the same time
+- Use the script [sh](https://github.com/srmadscience/voltdb-charglt/blob/master/scripts/runtest.sh) to run 5 instances at the same time
 
 ### Goal
 
 - Run 166,666 or more transactions per second.
 - 99th percentile latency needs to be 10ms or under.
-- The transactions will be  80% &quot;[Report Usage and Reserve More](https://github.com/srmadscience/voltdb-chargingdemo/blob/master/src/chargingdemoprocs/ReportQuotaUsage.java)&quot; and 20% &quot;[Add Credit](https://github.com/srmadscience/voltdb-chargingdemo/blob/master/src/chargingdemoprocs/AddCredit.java)&quot;
+- The transactions will be  80% &quot;[Report Usage and Reserve More](https://github.com/srmadscience/voltdb-charglt/blob/master/src/chargingdemoprocs/ReportQuotaUsage.java)&quot; and 20% &quot;[Add Credit](https://github.com/srmadscience/voltdb-charglt/blob/master/src/chargingdemoprocs/AddCredit.java)&quot;
 - We will also call &quot;showCurrentAllocations&quot; and &quot;getTotalBalance&quot; every 10 seconds.
 
 ### Steps
@@ -128,13 +128,13 @@ Instructions for how to do this are [here](https://docs.voltdb.com/AdminGuide/).
 
 #### Obtain the Demo
 
-git clone https://github.com/srmadscience/voltdb-chargingdemo/voltdb-chargingdemo.git
+git clone https://github.com/srmadscience/voltdb-charglt/voltdb-charglt.git
 
 #### Create the schema
 
-cd voltdb-chargingdemo/ddl
+cd voltdb-charglt/ddl
 
-sqlcmd --servers=vdb1 \&lt; [db.sql](https://github.com/srmadscience/voltdb-chargingdemo/blob/master/ddl/db.sql)
+sqlcmd --servers=vdb1 \&lt; [db.sql](https://github.com/srmadscience/voltdb-charglt/blob/master/ddl/db.sql)
 
 Note that this code loads a jar file from voltdb-chargingdemo/jars.
 
@@ -161,32 +161,32 @@ java -jar ../jars/voltdb-chargingdemo-client.jar vdb1,vdb2,vdb3 1000000 1000000 
 
 
 
-To make things easier we use a file called &quot;[runtest.sh](https://github.com/srmadscience/voltdb-chargingdemo/blob/master/scripts/runtest.sh)&quot;, which creates the users and then runs the workload at increasing intervals and puts the results in a file. Note that runtest.sh will need to be tweaked in order for you to use it.
+To make things easier we use a file called &quot;[runtest.sh](https://github.com/srmadscience/voltdb-charglt/blob/master/scripts/runtest.sh)&quot;, which creates the users and then runs the workload at increasing intervals and puts the results in a file. Note that runtest.sh will need to be tweaked in order for you to use it.
 
-&quot;[runtest.sh](https://github.com/srmadscience/voltdb-chargingdemo/blob/master/scripts/runtest.sh)&quot; can be persuaded to do a series of runs at increasing TPS levels and put the results in a file for later analysis, which is what we did.
+&quot;[runtest.sh](https://github.com/srmadscience/voltdb-charglt/blob/master/scripts/runtest.sh)&quot; can be persuaded to do a series of runs at increasing TPS levels and put the results in a file for later analysis, which is what we did.
 
 ### Sample Results
 
 In the graph below the green line is &quot;Requested TPMS&quot; - How many transactions per millisecond we were trying to do.
 
 
-![graph](https://github.com/srmadscience/voltdb-chargingdemo/blob/master/results/sorted_raw_data_chart190725.png "graph")
+![graph](https://github.com/srmadscience/voltdb-charglt/blob/master/results/sorted_raw_data_chart190725.png "graph")
 
 The red line is what we actually did. Due to the vagaries of how the test runs it&#39;s often slightly higher than &quot;Requested TPMS&quot; at the start, but then tracks it reasonably accurately.
 
 The grey line is server CPU Busy %, which is on the right hand scale. We see that it accurately aligns with &quot;Actual TPMS&quot;, which is good.
 
-The blue line is the 99th Percentile latency for [ReportQuotaUsage](https://github.com/srmadscience/voltdb-chargingdemo/blob/master/src/chargingdemoprocs/ReportQuotaUsage.java). This is where we start to see the system hit its limits. Until 272 TPMS it&#39;s 1ms, but then it rapidly spikes to 9ms at 274 TPMS and breaks our SLA at 286 TPMS with 19ms. This is what we&#39;d expect, as the CPU is around 75% by then, and requests are starting to queue, which manifests itself as latency.
+The blue line is the 99th Percentile latency for [ReportQuotaUsage](https://github.com/srmadscience/voltdb-charglt/blob/master/src/chargingdemoprocs/ReportQuotaUsage.java). This is where we start to see the system hit its limits. Until 272 TPMS it&#39;s 1ms, but then it rapidly spikes to 9ms at 274 TPMS and breaks our SLA at 286 TPMS with 19ms. This is what we&#39;d expect, as the CPU is around 75% by then, and requests are starting to queue, which manifests itself as latency.
 
-The Blue dashed line below is the average latency for  [ReportQuotaUsage](https://github.com/srmadscience/voltdb-chargingdemo/blob/master/src/chargingdemoprocs/ReportQuotaUsage.java), and shows that if you didn&#39;t care about the 99th percentile and were willing to work with average latency instead, you could probably get around 25% more TPMS out of the system.
+The Blue dashed line below is the average latency for  [ReportQuotaUsage](https://github.com/srmadscience/voltdb-charglt/blob/master/src/chargingdemoprocs/ReportQuotaUsage.java), and shows that if you didn&#39;t care about the 99th percentile and were willing to work with average latency instead, you could probably get around 25% more TPMS out of the system.
 
-The Green lines show us that the profile of [AddCredit](https://github.com/srmadscience/voltdb-chargingdemo/blob/master/src/chargingdemoprocs/AddCredit.java) is pretty much the same.
+The Green lines show us that the profile of [AddCredit](https://github.com/srmadscience/voltdb-charglt/blob/master/src/chargingdemoprocs/AddCredit.java) is pretty much the same.
 
 In practical terms this means we could  easily meet the requested workload of 166,666 TPS.
 
 
 
-The data for the above graph can be found [here](https://github.com/srmadscience/voltdb-chargingdemo/blob/master/results/sorted_raw_data190725.xls).
+The data for the above graph can be found [here](https://github.com/srmadscience/voltdb-charglt/blob/master/results/sorted_raw_data190725.xls).
 
 Putting the results in context
 
@@ -196,7 +196,7 @@ Each [z1d.3xlarge](https://aws.amazon.com/ec2/instance-types/z1d/) provides 6 ph
 
 **Statements per call**
 
-Each request  can and does issue multiple SQL statements. For example &quot;[Report Usage and Reserve More](https://github.com/srmadscience/voltdb-chargingdemo/blob/master/src/chargingdemoprocs/ReportQuotaUsage.java)&quot; issues between 7 and 14 each invocation, so if you want to look at this in terms of &quot;SQL statements per second&quot; the actual capacity is around 2,700,000 operations per second.
+Each request  can and does issue multiple SQL statements. For example &quot;[Report Usage and Reserve More](https://github.com/srmadscience/voltdb-charglt/blob/master/src/chargingdemoprocs/ReportQuotaUsage.java)&quot; issues between 7 and 14 each invocation, so if you want to look at this in terms of &quot;SQL statements per second&quot; the actual capacity is around 2,700,000 operations per second.
 
 ## Conclusion
 
