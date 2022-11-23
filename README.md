@@ -44,7 +44,7 @@ Although this demo doesn&#39;t include support for failovers, the schema does. I
 
 **Downstream Systems**
 
-In addition to allowing or denying access we need to tell a downstream back office system when money is spent or added. This needs to be accurate and up to date. In our demo we implement this using an [Export Stream](https://docs.voltdb.com/UsingVoltDB/ChapExport.php) called &#39;user\_financial\_events&#39;, which goes to a logical destination called &#39;finevent&#39;. &#39;Finevent&#39; can be [Kafka](https://docs.voltdb.com/UsingVoltDB/ExportToKafka.php), [Kinesis](https://github.com/VoltDB/export-kinesis), [JDBC](https://docs.voltdb.com/UsingVoltDB/ExportToJdbc.php), etc.
+In addition to allowing or denying access we need to tell a downstream back office system when money is spent or added. This needs to be accurate and up to date. In our demo we implement this using an [Export Stream](https://docs.voltactivedata.com/UsingVoltDB/ChapExport.php) called &#39;user\_financial\_events&#39;, which goes to a logical destination called &#39;finevent&#39;. &#39;Finevent&#39; can be [Kafka](https://docs.voltactivedata.com/UsingVoltDB/ExportToKafka.php), [Kinesis](https://github.com/VoltDB/export-kinesis), [JDBC](https://docs.voltactivedata.com/UsingVoltDB/ExportToJdbc.php), etc.
 
 **Value at Risk calculations**
 
@@ -88,8 +88,8 @@ We also sometimes have to store device session data, which is presented to us as
 | User\_recent\_transactions | Table | allows us to spot duplicate transactions and also allows us to track what happened to a specific user during a run | userid |
 | allocated\_by\_product | View | How much of each product is currently reserved |   |
 | total\_balances | View | A single row listing how much credit the system holds. |   |
-| User\_financial\_events | [Export stream](https://docs.voltdb.com/UsingVoltDB/ExportProjectFile.php) | inserted into when we add or spend money | userid |
-| finevent | [Export target](https://docs.voltdb.com/UsingVoltDB/ExportProjectFile.php) | Where rows in user\_financial\_events end up - could be kafka, kinesis, HDFS etc | userid |
+| User\_financial\_events | [Export stream](https://docs.voltactivedata.com/UsingVoltDB/ExportProjectFile.php) | inserted into when we add or spend money | userid |
+| finevent | [Export target](https://docs.voltactivedata.com/UsingVoltDB/ExportProjectFile.php) | Where rows in user\_financial\_events end up - could be kafka, kinesis, HDFS etc | userid |
 
 
 
@@ -103,8 +103,8 @@ We used a cluster with the following configuration:
 
 - 4 x AWS z1d.3xlarge nodes (1 client, 3 for the server)
 - Command Logs and Snapshots on internal SSD drive
-- [K factor](https://docs.voltdb.com/UsingVoltDB/KSafeEnable.php)of &#39;1&#39;.
-- Default settings for [command log flush interval](https://docs.voltdb.com/UsingVoltDB/CmdLogConfig.php).
+- [K factor](https://docs.voltactivedata.com/UsingVoltDB/KSafeEnable.php)of &#39;1&#39;.
+- Default settings for [command log flush interval](https://docs.voltactivedata.com/UsingVoltDB/CmdLogConfig.php).
 - Sitesperhost set to default value of 8.
 - 20,000,000 users
 - Use the script [sh](https://github.com/srmadscience/voltdb-charglt/blob/master/scripts/runtest.sh) to run 5 instances at the same time
@@ -120,11 +120,11 @@ We used a cluster with the following configuration:
 
 #### Obtain VoltDB
 
-VoltDB can be downloaded [here](https://www.voltdb.com/try-voltdb/).
+VoltDB can be downloaded [here](https://www.voltactivedata.com/try-voltdb/).
 
 #### Create your cluster
 
-Instructions for how to do this are [here](https://docs.voltdb.com/AdminGuide/). Alternatively we can give you access to the AWS CloudFormation scripts we used if you contact us.
+Instructions for how to do this are [here](https://docs.voltactivedata.com/AdminGuide/). Alternatively we can give you access to the AWS CloudFormation scripts we used if you contact us.
 
 #### Obtain the Demo
 
