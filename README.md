@@ -2,11 +2,11 @@
 
 ## Introduction
 
-In this post I&#39;d like to highlight voltdb-charglt, which I&#39;ve recently made available on github. Most demos are designed to be as simplistic as possible. I&#39;ve always found that frustrating, as anyone who has ever written a real world application knows that what takes two lines in a demo can take about 50 in reality. With that in mind, I wrote voltdb-charglt, which is intended to demonstrate how we can help in scenarios such as telco where users are working with shared and finite resources while meeting SLAs, such as SMS messages or bandwidth. Instead of simplifying things to the point of absurdity, it tries to be realistic yet still comprehensible to outsiders.
+This is a demo of the core functionality of Volt. Most demos are designed to be as simplistic as possible. I&#39;ve always found that frustrating, as anyone who has ever written a real world application knows that what takes two lines in a demo can take about 50 in reality. With that in mind, we wrote voltdb-charglt, which is intended to demonstrate how we can help in scenarios such as telco where users are working with shared and finite resources while meeting SLAs, such as SMS messages or bandwidth. Instead of simplifying things to the point of absurdity, it tries to be realistic yet still comprehensible to outsiders.
 
 My own background is in telco, and the demo is a drastically simplified representation of what&#39;s known as a &#39;[charging](https://portal.3gpp.org/desktopmodules/Specifications/SpecificationDetails.aspx?specificationId=1896)&#39; system. Every prepaid cell phone uses one of these - it decides what the user can do, how long they can do it for, and tells downstream systems what was used when the activity finishes. In such a system the following activities happen:
 
-1. &quot;[Provision](https://github.com/srmadscience/voltdb-charglt/blob/master/serverSrc/chargingdemoprocs/UpsertUser.java)&quot; a user.  This happens once, and is the part where they enter the number on your sim card into the computer at the store so the phone systems knows that that sim card is now 1-510-555-1212 or whatever your number is.
+1. &quot;[Provision](https://github.com/srmadscience/voltdb-charglt/blob/master/serverSrc/chargingdemoprocs/UpsertUser.java)&quot; a user.  This happens once, and is the part where they enter the number on your sim card into the computer at the store so the phone systems knows that that SIM card is now 1-510-555-1212 or whatever your number is.
 
 1. &quot;[Add Credit](https://github.com/srmadscience/voltdb-charglt/blob/master/serverSrc/chargingdemoprocs/AddCredit.java)&quot;. This is when a third party system tells the phone company&#39;s computer that you have just gone to a recharging center and added US$20 in credit.
 
@@ -73,7 +73,7 @@ Note that in Use Cases where latency spikes are OK, scaling is usually a lot eas
 
 **Arbitrary Payload**
 
-We also sometimes have to store device session data, which is presented to us as a JSON object. While the code allows you to [read, softlock](https://github.com/srmadscience/voltdb-charglt/tree/master/src/chargingdemoprocs/GetAndLockUser.java) and [update](https://github.com/srmadscience/voltdb-charglt/tree/master/src/chargingdemoprocs/UpdateLockedUser.java) this JSON it isn&#39;t currently part of the demo.
+We also sometimes have to store device session data, which is presented to us as a JSON object. While the code allows you to [read, softlock](https://github.com/srmadscience/voltdb-charglt/blob/master/serverSrc/chargingdemoprocs/GetAndLockUser.java) and [update](https://github.com/srmadscience/voltdb-charglt/blob/master/serverSrc/chargingdemoprocs/UpdateLockedUser.java) this JSON it isn&#39;t currently part of the demo.
 
 ## Our Schema
 
@@ -107,7 +107,7 @@ We used a cluster with the following configuration:
 - Default settings for [command log flush interval](https://docs.voltactivedata.com/UsingVoltDB/CmdLogConfig.php).
 - Sitesperhost set to default value of 8.
 - 20,000,000 users
-- Use the script [sh](https://github.com/srmadscience/voltdb-charglt/blob/master/scripts/runtest.sh) to run 5 instances at the same time
+- Use the script [sh](https://github.com/srmadscience/voltdb-charglt/blob/master/scripts/runbenchmark.sh) to run 5 instances at the same time
 
 ### Goal
 
