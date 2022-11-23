@@ -88,8 +88,8 @@ We also sometimes have to store device session data, which is presented to us as
 | User\_recent\_transactions | Table | allows us to spot duplicate transactions and also allows us to track what happened to a specific user during a run | userid |
 | allocated\_by\_product | View | How much of each product is currently reserved |   |
 | total\_balances | View | A single row listing how much credit the system holds. |   |
-| User\_financial\_events | [Export stream](https://docs.voltactivedata.com/UsingVoltDB/ExportProjectFile.php) | inserted into when we add or spend money | userid |
-| finevent | [Export target](https://docs.voltactivedata.com/UsingVoltDB/ExportProjectFile.php) | Where rows in user\_financial\_events end up - could be kafka, kinesis, HDFS etc | userid |
+| User\_financial\_events | [Export stream](https://docs.voltactivedata.com/UsingVoltDB//ddlref_createstream.php) | inserted into when we add or spend money | userid |
+| finevent | [Export target](https://docs.voltdb.com/v7docs/UsingVoltDB/ExportConfig.php) | Where rows in user\_financial\_events end up - could be kafka, kinesis, HDFS etc | userid |
 
 
 
