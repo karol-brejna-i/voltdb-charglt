@@ -29,7 +29,7 @@ ST=$1
 MX=$2
 INC=$3
 USERCOUNT=$4
-DURATION=1200
+DURATION=300
 
 if 	
 	[ "$MX" = "" -o "$ST" = "" -o "$INC" = "" -o "$USERCOUNT" = "" ]
