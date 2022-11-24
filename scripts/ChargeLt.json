@@ -5,7 +5,7 @@
         "builtIn": 1,
         "datasource": {
           "type": "datasource",
-          "uid": "grafana"
+          "uid": "${ds}"
         },
         "enable": true,
         "hide": true,
@@ -35,7 +35,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "WLtAQ52Gk"
+        "uid": "${ds}"
       },
       "fill": 1,
       "fillGradient": 0,
@@ -124,7 +124,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "WLtAQ52Gk"
+        "uid": "${ds}"
       },
       "description": "",
       "fill": 1,
@@ -215,7 +215,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "WLtAQ52Gk"
+        "uid": "${ds}"
       },
       "fill": 1,
       "fillGradient": 0,
@@ -304,7 +304,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "WLtAQ52Gk"
+        "uid": "${ds}"
       },
       "fill": 1,
       "fillGradient": 0,
@@ -400,10 +400,28 @@
   "tags": [
     "Sandbox"
   ],
-  "templating": {
-    "list": []
+   "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "Site 0",
+          "value": "Site 0"
+        },
+        "hide": 2,
+        "includeAll": false,
+        "multi": false,
+        "name": "ds",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "Site 0",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
   },
-  "time": {
+"time": {
     "from": "now-1h",
     "to": "now"
   },

@@ -1,15 +1,20 @@
-#!/bin/sh -x
 
-MX=$1
+ST=$1
+MX=$2
+INC=$3
+USERCOUNT=5000000
 
 if 	
-	[ "$MX" == "" ]
+	[ "$MX" = "" -o "$ST" = "" -o "$INC" = 0 ]
 then
-	echo Usage: $0 max_tps
+	echo Usage: $0 start_tps max_tps increment
+
 	exit 1
 fi
 
 cd
+mkdir logs 2> /dev/null
+
 cd voltdb-charglt/jars 
 
 # silently kill off any copy that is currently running...
@@ -17,7 +22,7 @@ kill -9 `ps -deaf | grep ChargingDemoTransactions.jar  | grep -v grep | awk '{ p
 
 sleep 5 
 
-CT=1
+CT=${ST}
 DT=`date '+%Y%m%d_%H%M'`
 
 while
@@ -25,8 +30,10 @@ while
 do
 
 	echo "Starting a 20 minute run at ${CT} Transactions Per Second"
-	java -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  60000000 ${CT} 1200 60 > ${DT}_`uname -n`_${CT}.lst &
-	CT=`expr $CT + 1`
+	java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} 1200 60 | tee -a $HOME/logs/${DT}_charging_`uname -n`_${CT}.lst 
+	CT=`expr $CT + ${INC}`
 done
 
 wait 
+
+exit 0

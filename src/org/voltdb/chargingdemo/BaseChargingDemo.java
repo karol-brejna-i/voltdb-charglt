@@ -376,7 +376,9 @@ public abstract class BaseChargingDemo {
 
 		msg("Creating client records for " + users.length + " users");
 		for (int i = 0; i < users.length; i++) {
-			users[i] = new UserTransactionState(i, -1);
+		    // We don't know a users credit till we've spoken to the server, so 
+		    // we make an optimistic assumption...
+			users[i] = new UserTransactionState(i, Long.MAX_VALUE);
 		}
 
 		final long startMsRun = System.currentTimeMillis();

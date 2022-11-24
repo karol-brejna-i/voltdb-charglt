@@ -32,82 +32,79 @@ package org.voltdb.chargingdemo;
  */
 public class UserTransactionState {
 
-  
-  /**
-   * ID of user.
-   */
-  public int id = 0;
+    /**
+     * ID of user.
+     */
+    public int id = 0;
 
- 
-  public long sessionId = -1;
-  
-  /**
-   * When a transaction started, or zero if there isn't one.
-   */
-  public long txStartMs = 0;
+    public long sessionId = -1;
 
-  /**
-   * Balance,
-   */
-  public long spendableBalance = 0;
-  
-  public long currentlyReserved = 0;
+    /**
+     * When a transaction started, or zero if there isn't one.
+     */
+    public long txStartMs = 0;
 
-  /**
-   * Create a record for a user.
-   * 
-   * @param id
-   */
-  public UserTransactionState(int id,long spendableBalance) {
-    this.id = id;
-    this.spendableBalance =  spendableBalance;
-   }
+    /**
+     * Balance. Long.MAX_VALUE means we don't know...
+     */
+    public long spendableBalance = 0;
 
-  /**
-   * Report start of transaction.
-   */
-  public void startTran() {
+    /**
+     * Currently reserved balance...
+     */
+    public long currentlyReserved = 0;
 
-    txStartMs = System.currentTimeMillis();
-  }
-
-  /**
-   * @return the txInFlight
-   */
-  public boolean isTxInFlight() {
-
-    if (txStartMs > 0) {
-      return true;
+    
+    /**
+     * Create a record for a user.
+     * 
+     * @param id
+     * @param spendableBalance  Long.MAX_VALUE means we don't know...
+     */
+    public UserTransactionState(int id, long spendableBalance) {
+        this.id = id;
+        this.spendableBalance = spendableBalance;
     }
 
-    return false;
-  }
+    /**
+     * Report start of transaction.
+     */
+    public void startTran() {
 
-  /**
-   * We measure latency by comparing when this call happens to when startTran
-   * was called.
-   * 
-   * @param productId
-   * @param sessionid
-   * @param statusByte
-   */
-  public void reportEndTransaction(long sessionid, byte statusByte, long spendableBalance) {
+        txStartMs = System.currentTimeMillis();
+    }
 
- 
-    txStartMs = 0;
-    this.sessionId = sessionid;
-    this.spendableBalance = spendableBalance;
+    /**
+     * @return the txInFlight
+     */
+    public boolean isTxInFlight() {
 
-  }
+        if (txStartMs > 0) {
+            return true;
+        }
 
+        return false;
+    }
 
-public void endTran() {
-	txStartMs = 0;
-	
-}
+    /**
+     * We measure latency by comparing when this call happens to when startTran was
+     * called.
+     * 
+     * @param productId
+     * @param sessionid
+     * @param statusByte
+     */
+    public void reportEndTransaction(long sessionid, byte statusByte, long spendableBalance) {
 
+        txStartMs = 0;
+        this.sessionId = sessionid;
+        this.spendableBalance = spendableBalance;
 
+    }
 
+    public void endTran() {
+        txStartMs = 0;
 
-  
+    }
+
 }
