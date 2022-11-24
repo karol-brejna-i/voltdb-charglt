@@ -25,15 +25,19 @@
 
 . $HOME/.profile
 
+USERCOUNT=$1
+TPMS=$2
+MAX_CREDIT=$3
+
+if 
+        [ "$USERCOUNT" = "" -o "$TPMS" = "" -o "$MAX_CREDIT" = "" ]
+then
+        echo Usage: $0 usercount tpms max_credit
+
+        exit 1
+fi
+
 cd
-cd voltdb-charglt/ddl
+cd voltdb-charglt/jars
 
-sqlcmd --servers=vdb1 < create_db.sql
-
-cd ../scripts
-$HOME/bin/reload_dashboards.sh ChargeLt.json
-
-java  ${JVMOPTS}  -jar $HOME/bin/addtodeploymentdotxml.jar `cat $HOME/.vdbhostnames`  deployment $HOME/voltdb-charglt/scripts/export_and_import.xml
-
-cd ../jars
-java ${JVMOPTS} -jar CreateChargingDemoData.jar `cat $HOME/.vdbhostnames`  5000000 30 100000
+java ${JVMOPTS} -jar CreateChargingDemoData.jar `cat $HOME/.vdbhostnames`  $USERCOUNT $TPMS $MAX_CREDIT

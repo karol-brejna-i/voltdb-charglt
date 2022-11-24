@@ -25,15 +25,9 @@
 
 . $HOME/.profile
 
+TPS=200
+
 cd
-cd voltdb-charglt/ddl
-
-sqlcmd --servers=vdb1 < create_db.sql
-
-cd ../scripts
-$HOME/bin/reload_dashboards.sh ChargeLt.json
-
-java  ${JVMOPTS}  -jar $HOME/bin/addtodeploymentdotxml.jar `cat $HOME/.vdbhostnames`  deployment $HOME/voltdb-charglt/scripts/export_and_import.xml
-
-cd ../jars
-java ${JVMOPTS} -jar CreateChargingDemoData.jar `cat $HOME/.vdbhostnames`  5000000 30 100000
+cd voltdb-charglt
+cd jars
+java  ${JVMOPTS}  -jar DeleteChargingDemoData.jar  `cat $HOME/.vdbhostnames`  $TPS
