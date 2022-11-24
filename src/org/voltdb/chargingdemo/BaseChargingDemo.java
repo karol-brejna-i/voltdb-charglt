@@ -223,10 +223,14 @@ public abstract class BaseChargingDemo {
 	 */
 	protected static void upsertAllUsers(int userCount, int tpMs, String ourJson, int initialCredit, Client mainClient)
 			throws InterruptedException, IOException, NoConnectionsException {
+	    
 		final long startMsUpsert = System.currentTimeMillis();
+		
 		long currentMs = System.currentTimeMillis();
 		int tpThisMs = 0;
+Random r = new Random();
 
+		
 		for (int i = 0; i < userCount; i++) {
 
 			if (tpThisMs++ > tpMs) {
@@ -241,7 +245,7 @@ public abstract class BaseChargingDemo {
 
 			ComplainOnErrorCallback upsertUserCallback = new ComplainOnErrorCallback();
 
-			mainClient.callProcedure(upsertUserCallback, "UpsertUser", i, initialCredit, ourJson, "Created",
+			mainClient.callProcedure(upsertUserCallback, "UpsertUser", i, r.nextInt(initialCredit), ourJson, "Created",
 					new Date(startMsUpsert), "Create_" + i);
 
 			if (i % 100000 == 1) {

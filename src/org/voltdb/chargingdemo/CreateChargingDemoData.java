@@ -45,7 +45,7 @@ public class CreateChargingDemoData extends BaseChargingDemo {
 		msg("Parameters:" + Arrays.toString(args));
 
 		if (args.length != 4 ) {
-			msg("Usage: hostnames recordcount tpms  initialcredit ");
+			msg("Usage: hostnames recordcount tpms  maxinitialcredit ");
 			System.exit(1);
 		}
 
