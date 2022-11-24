@@ -75,7 +75,7 @@ public abstract class BaseChargingDemo {
 
     /**
      * Print a formatted message.
-     * 
+     *
      * @param message
      */
     public static void msg(String message) {
@@ -89,7 +89,7 @@ public abstract class BaseChargingDemo {
 
     /**
      * Connect to VoltDB using a comma delimited hostname list.
-     * 
+     *
      * @param commaDelimitedHostnames
      * @return
      * @throws Exception
@@ -109,10 +109,10 @@ public abstract class BaseChargingDemo {
 
             String[] hostnameArray = commaDelimitedHostnames.split(",");
 
-            for (int i = 0; i < hostnameArray.length; i++) {
-                msg("Connect to " + hostnameArray[i] + "...");
+            for (String element : hostnameArray) {
+                msg("Connect to " + element + "...");
                 try {
-                    client.createConnection(hostnameArray[i]);
+                    client.createConnection(element);
                 } catch (Exception e) {
                     msg(e.getMessage());
                 }
@@ -129,7 +129,7 @@ public abstract class BaseChargingDemo {
 
     /**
      * Convenience method to generate a JSON payload.
-     * 
+     *
      * @param length
      * @return
      */
@@ -152,9 +152,9 @@ public abstract class BaseChargingDemo {
     }
 
     /**
-     * 
+     *
      * Delete all users in a range at tpMs per second
-     * 
+     *
      * @param minId
      * @param maxId
      * @param tpMs
@@ -211,7 +211,7 @@ public abstract class BaseChargingDemo {
 
     /**
      * Create userCount users at tpMs per second.
-     * 
+     *
      * @param userCount
      * @param tpMs
      * @param ourJson
@@ -263,7 +263,7 @@ public abstract class BaseChargingDemo {
 
     /**
      * Convenience method to query a user a general stats and log the results.
-     * 
+     *
      * @param mainClient
      * @param queryUserId
      * @throws IOException
@@ -290,9 +290,9 @@ public abstract class BaseChargingDemo {
     }
 
     /**
-     * 
+     *
      * Convenience method to query all users who have a specific loyalty card id
-     * 
+     *
      * @param mainClient
      * @param cardId
      * @throws IOException
@@ -315,7 +315,7 @@ public abstract class BaseChargingDemo {
     /**
      * Convenience method to remove unneeded records storing old allotments of
      * credit.
-     * 
+     *
      * @param mainClient
      * @throws IOException
      * @throws NoConnectionsException
@@ -332,9 +332,9 @@ public abstract class BaseChargingDemo {
     }
 
     /**
-     * 
+     *
      * Convenience method to clear outstaning locks between runs
-     * 
+     *
      * @param mainClient
      * @throws IOException
      * @throws NoConnectionsException
@@ -352,9 +352,9 @@ public abstract class BaseChargingDemo {
     }
 
     /**
-     * 
+     *
      * Run a transaction benchmark for userCount users at tpMs per ms.
-     * 
+     *
      * @param userCount              number of users
      * @param tpMs                   transactions per milliseconds
      * @param durationSeconds
@@ -486,10 +486,10 @@ public abstract class BaseChargingDemo {
     }
 
     /**
-     * 
+     *
      * Run a key value store benchmark for userCount users at tpMs transactions per
      * millisecond and with deltaProportion records sending the entire record.
-     * 
+     *
      * @param userCount
      * @param tpMs
      * @param durationSeconds
@@ -613,7 +613,7 @@ public abstract class BaseChargingDemo {
 
     /**
      * Return a loyalty card number
-     * 
+     *
      * @param r
      * @return a random loyalty card number between 0 and 1 million
      */

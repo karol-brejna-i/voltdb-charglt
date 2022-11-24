@@ -25,7 +25,7 @@ package chargingdemoprocs;
 
 /**
  * Possible response codes.
- * 
+ *
  */
 public class ReferenceData {
 

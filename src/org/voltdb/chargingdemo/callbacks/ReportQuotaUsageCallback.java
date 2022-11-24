@@ -44,7 +44,7 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.voltdb.chargingdemo.ReportLatencyCallback#clientCallback(org.voltdb.
 	 * client.ClientResponse)
 	 */
@@ -71,8 +71,8 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
 
 				// Get balance for user, based on finished transactions.
 				VoltTable balanceTable = arg0.getResults()[arg0.getResults().length - 2];
-				
-			    // Get total value of outstanding reservations  
+
+			    // Get total value of outstanding reservations
 				VoltTable reservationTable = arg0.getResults()[arg0.getResults().length - 1];
 
 				if (balanceTable.advanceRow()) {
@@ -115,7 +115,7 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
 
 	/**
 	 * Print a formatted message.
-	 * 
+	 *
 	 * @param message
 	 */
 	public static void msg(String message) {

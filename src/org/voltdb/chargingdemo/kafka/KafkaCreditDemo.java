@@ -67,31 +67,31 @@ public class KafkaCreditDemo {
 			msg("Value should be a number:" + e.getMessage());
 			System.exit(1);
 		}
-		
-		
+
+
 		Properties config = new Properties();
 		config.put("client.id", InetAddress.getLocalHost().getHostName());
 		config.put("bootstrap.servers", kafkaserverplusport);
 		config.put(
-	              ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, 
+	              ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
 	              StringSerializer.class);
 		config.put(
-	              ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, 
+	              ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
 	              StringSerializer.class);
 		config.put("acks", "all");
-		
-		KafkaProducer<String, String> producer = new KafkaProducer<String, String> (config);
+
+		KafkaProducer<String, String> producer = new KafkaProducer<> (config);
 
 		long endtimeMs = System.currentTimeMillis() + (1000 * durationseconds);
 		// How many transactions we've done...
-		
+
 		int tranCount = 0;
 
 		int tpThisMs = 0;
 		long currentMs = System.currentTimeMillis();
-		
+
 		while (endtimeMs > System.currentTimeMillis()) {
-			
+
 
 			if (tpThisMs++ > tpms) {
 
@@ -106,31 +106,31 @@ public class KafkaCreditDemo {
 				currentMs = System.currentTimeMillis();
 				tpThisMs = 0;
 			}
-			
+
 			int userId = r.nextInt(recordCount);
 			int amount = r.nextInt(maxamount);
 			String txnId = "Kafka_" + tranCount + "_" + currentMs;
 			String request = SINGLE_QUOTE + userId + QUOTE_COMMA_QUOTE + amount + QUOTE_COMMA_QUOTE +txnId +  SINGLE_QUOTE ;
-				
-			ProducerRecord<String, String> newrec = new ProducerRecord<String, String>("ADDCREDIT",
+
+			ProducerRecord<String, String> newrec = new ProducerRecord<>("ADDCREDIT",
 					request);
-			
+
 			producer.send(newrec);
-			
+
 			if (tranCount++ % 10000 == 0) {
 				msg("On transaction# " + tranCount + ", user,amount,txnid= " + request);
 			}
 
 		}
-		
+
 		producer.flush();
 		producer.close();
-		
+
 	}
 
 	/**
 	 * Print a formatted message.
-	 * 
+	 *
 	 * @param message
 	 */
 	public static void msg(String message) {

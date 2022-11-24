@@ -26,6 +26,7 @@ package org.voltdb.chargingdemo;
  */
 
 import java.util.Arrays;
+
 import org.voltdb.client.Client;
 
 public class ChargingDemoKVStore extends BaseChargingDemo {
@@ -60,10 +61,10 @@ public class ChargingDemoKVStore extends BaseChargingDemo {
 
 		// How often we do global queries...
 		int jsonsize = Integer.parseInt(args[5]);
-		
+
 		int deltaProportion = Integer.parseInt(args[6]);
 
-	
+
 		try {
 			// A VoltDB Client object maintains multiple connections to all the
 			// servers in the cluster.

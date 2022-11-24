@@ -1,8 +1,5 @@
 package chargingdemoprocs;
 
-import java.util.Date;
-import java.util.Random;
-
 /* This file is part of VoltDB.
  * Copyright (C) 2008-2022 VoltDB Inc.
  *
@@ -29,7 +26,6 @@ import java.util.Random;
 import org.voltdb.SQLStmt;
 import org.voltdb.VoltProcedure;
 import org.voltdb.VoltTable;
-import org.voltdb.types.TimestampType;
 
 public class ReportQuotaUsage extends VoltProcedure {
 
@@ -37,13 +33,13 @@ public class ReportQuotaUsage extends VoltProcedure {
 
 	public static final SQLStmt getUser = new SQLStmt(
 			"SELECT userid FROM user_table WHERE userid = ?;");
-    
-	  public static final SQLStmt removeOldestTransaction = new SQLStmt("DELETE " 
+
+	  public static final SQLStmt removeOldestTransaction = new SQLStmt("DELETE "
               + "FROM user_recent_transactions "
               + "WHERE userid = ? "
               + "AND txn_time < DATEADD(MINUTE, -1,NOW) "
               + "ORDER BY userid, txn_time, user_txn_id LIMIT 2;");
-	  
+
     public static final SQLStmt getTxn = new SQLStmt("SELECT txn_time FROM user_recent_transactions "
             + "WHERE userid = ? AND user_txn_id = ?;");
 

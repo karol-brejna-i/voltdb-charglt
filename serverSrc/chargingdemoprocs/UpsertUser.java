@@ -39,7 +39,7 @@ public class UpsertUser extends VoltProcedure {
 
 	public static final SQLStmt addTxn = new SQLStmt("INSERT INTO user_recent_transactions "
 			+ "(userid, user_txn_id, txn_time, approved_amount,spent_amount,purpose) VALUES (?,?,NOW,?,?,?);");
-	
+
 	public static final SQLStmt insertUser = new SQLStmt(
 			"INSERT INTO user_table (userid, user_json_object,user_last_seen) "
 					+ "VALUES (?,?,?);");
@@ -90,7 +90,7 @@ public class UpsertUser extends VoltProcedure {
 			}
 
 		}
-		
+
 		return voltExecuteSQL(true);
 	}
 }

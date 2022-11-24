@@ -45,7 +45,7 @@ public class AddCredit extends VoltProcedure {
 
 	public static final SQLStmt reportFinancialEvent = new SQLStmt("INSERT INTO user_financial_events "
 			+ "(userid,amount,user_txn_id,message) VALUES (?,?,?,?);");
-	
+
 	public static final SQLStmt getUserBalance = new SQLStmt("SELECT balance FROM user_balance WHERE userid = ?;");
 
 	public static final SQLStmt getCurrrentlyAllocated = new SQLStmt(
@@ -55,20 +55,20 @@ public class AddCredit extends VoltProcedure {
             + "FROM user_recent_transactions "
             + "WHERE userid = ? "
             + "ORDER BY txn_time,userid,user_txn_id LIMIT 1;");
-   
+
    public static final SQLStmt deleteOldTxn = new SQLStmt("DELETE FROM user_recent_transactions "
             + "WHERE userid = ? AND user_txn_id = ?;");
-  
+
 
 	// @formatter:on
 
     private static final long FIVE_MINUTES_IN_MS = 1000 * 60 * 5;
-    
+
     /**
      * A VoltDB stored procedure to add credit to a user in the chargingdemo demo.
      * It checks that the user exists and also makes sure that this transaction
      * hasn't already happened.
-     * 
+     *
      * @param userId
      * @param extraCredit
      * @param txnId
@@ -112,7 +112,7 @@ public class AddCredit extends VoltProcedure {
         // Delete oldest record if old enough
         if (userAndTxn[2].advanceRow()) {
             TimestampType oldestTxn = userAndTxn[2].getTimestampAsTimestamp("txn_time");
-            
+
             if (oldestTxn.asExactJavaDate().before(new Date(getTransactionTime().getTime() - FIVE_MINUTES_IN_MS))) {
                 String oldestTxnId = userAndTxn[2].getString("user_txn_id");
                 voltQueueSQL(deleteOldTxn, userId, oldestTxnId);

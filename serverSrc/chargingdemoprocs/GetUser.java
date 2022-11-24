@@ -42,7 +42,7 @@ public class GetUser extends VoltProcedure {
 
 	/**
 	 * Gets all the information we have about a user.
-	 * 
+	 *
 	 * @param userId
 	 * @return
 	 * @throws VoltAbortException

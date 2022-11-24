@@ -43,7 +43,7 @@ public class AddCreditCallback implements ProcedureCallback {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.voltdb.chargingdemo.ReportLatencyCallback#clientCallback(org.voltdb.
 	 * client.ClientResponse)
 	 */
@@ -85,7 +85,7 @@ public class AddCreditCallback implements ProcedureCallback {
 
 	/**
 	 * Print a formatted message.
-	 * 
+	 *
 	 * @param message
 	 */
 	public static void msg(String message) {

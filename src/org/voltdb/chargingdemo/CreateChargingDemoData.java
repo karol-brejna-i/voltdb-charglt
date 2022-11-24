@@ -38,7 +38,7 @@ public class CreateChargingDemoData extends BaseChargingDemo {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
+
 		Gson gson = new Gson();
 		Random r = new Random();
 
@@ -64,12 +64,12 @@ public class CreateChargingDemoData extends BaseChargingDemo {
 
 		// Default credit users are 'born' with
 		int initialCredit = Integer.parseInt(args[3]);
-	
+
 		try {
 			// A VoltDB Client object maintains multiple connections to all the
 			// servers in the cluster.
 			Client mainClient = connectVoltDB(hostlist);
-			
+
 			upsertAllUsers(userCount, tpMs, ourJson, initialCredit, mainClient);
 
 			msg("Closing connection...");
@@ -86,6 +86,6 @@ public class CreateChargingDemoData extends BaseChargingDemo {
 
 
 
-	
+
 
 }

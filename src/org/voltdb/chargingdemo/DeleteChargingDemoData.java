@@ -24,6 +24,7 @@ package org.voltdb.chargingdemo;
  */
 
 import java.util.Arrays;
+
 import org.voltdb.client.Client;
 import org.voltdb.client.ClientResponse;
 

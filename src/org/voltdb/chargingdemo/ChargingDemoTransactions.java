@@ -26,6 +26,7 @@ package org.voltdb.chargingdemo;
  */
 
 import java.util.Arrays;
+
 import org.voltdb.client.Client;
 
 public class ChargingDemoTransactions extends BaseChargingDemo {
@@ -64,7 +65,7 @@ public class ChargingDemoTransactions extends BaseChargingDemo {
 
 			clearUnfinishedTransactions(mainClient);
 
-			runTransactionBenchmark(userCount, tpMs, durationSeconds, globalQueryFreqSeconds, 
+			runTransactionBenchmark(userCount, tpMs, durationSeconds, globalQueryFreqSeconds,
 					mainClient);
 
 			msg("Closing connection...");

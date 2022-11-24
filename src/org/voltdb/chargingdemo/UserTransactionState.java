@@ -26,7 +26,7 @@ package org.voltdb.chargingdemo;
 /**
  * Class to keep track of how many transactions a given user has. It also keeps
  * track of whether a transaction is in progress and when it started.
- * 
+ *
  * @author drolfe
  *
  */
@@ -54,10 +54,10 @@ public class UserTransactionState {
      */
     public long currentlyReserved = 0;
 
-    
+
     /**
      * Create a record for a user.
-     * 
+     *
      * @param id
      * @param spendableBalance  Long.MAX_VALUE means we don't know...
      */
@@ -89,7 +89,7 @@ public class UserTransactionState {
     /**
      * We measure latency by comparing when this call happens to when startTran was
      * called.
-     * 
+     *
      * @param productId
      * @param sessionid
      * @param statusByte

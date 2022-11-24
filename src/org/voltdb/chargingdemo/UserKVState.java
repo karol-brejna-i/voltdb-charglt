@@ -63,7 +63,7 @@ public class UserKVState implements ProcedureCallback {
 
 	/**
 	 * Create a record for a user.
-	 * 
+	 *
 	 * @param id
 	 */
 	public UserKVState(int id) {
@@ -102,7 +102,7 @@ public class UserKVState implements ProcedureCallback {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

@@ -51,7 +51,7 @@ public class UpdateLockedUser extends VoltProcedure {
 	/**
 	 * Update a previously locked user. 'sessionid' is the unique id that was return
 	 * by GetAndLockUser, and is required for this to work.
-	 * 
+	 *
 	 * @param userId
 	 * @return
 	 * @throws VoltAbortException

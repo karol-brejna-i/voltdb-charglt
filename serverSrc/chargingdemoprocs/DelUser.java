@@ -40,7 +40,7 @@ public class DelUser extends VoltProcedure {
 
 	/**
 	 * Deletes all information we have about a user.
-	 * 
+	 *
 	 * @param userId
 	 * @return
 	 * @throws VoltAbortException
