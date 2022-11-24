@@ -23,18 +23,14 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 
 
-. $HOME/.profile
-
 ST=$1
-MX=$2
-INC=$3
-USERCOUNT=$4
+USERCOUNT=$2
 DURATION=1200
 
 if 	
-	[ "$MX" = "" -o "$ST" = "" -o "$INC" = "" -o "$USERCOUNT" = "" ]
+	[ "$ST" = "" -o "$USERCOUNT" = "" ]
 then
-	echo Usage: $0 start_tps max_tps increment usercount
+	echo Usage: $0 tps usercount
 
 	exit 1
 fi
@@ -49,17 +45,10 @@ kill -9 `ps -deaf | grep ChargingDemoTransactions.jar  | grep -v grep | awk '{ p
 
 sleep 2 
 
-CT=${ST}
+DT=`date '+%Y%m%d_%H%M'`
 
-while
-	[ "${CT}" -le "${MX}" ]
-do
 
-	DT=`date '+%Y%m%d_%H%M%S'`
-	echo "Starting a $DURATION second run at ${CT} Transactions Per Second"
-	java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} ${DURATION} 60 | tee -a $HOME/logs/${DT}_charging_`uname -n`_${CT}.lst 
-	CT=`expr $CT + ${INC}`
-done
-
+echo "Starting a $DURATION second run at ${ST} Transactions Per Second"
+java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${ST} $DURATION 60 | tee -a $HOME/logs/${DT}_charging_`uname -n`_${ST}.lst 
 
 exit 0

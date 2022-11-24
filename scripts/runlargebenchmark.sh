@@ -22,19 +22,19 @@
 #  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 #  OTHER DEALINGS IN THE SOFTWARE.
 
-
 . $HOME/.profile
 
 ST=$1
 MX=$2
 INC=$3
 USERCOUNT=$4
-DURATION=1200
+TC=$5
+DURATION=300
 
 if 	
-	[ "$MX" = "" -o "$ST" = "" -o "$INC" = "" -o "$USERCOUNT" = "" ]
+	[ "$MX" = "" -o "$ST" = "" -o "$INC" = "" -o "$USERCOUNT" = "" -o "$TC" = "" ]
 then
-	echo Usage: $0 start_tps max_tps increment usercount
+	echo Usage: $0 start_tps max_tps increment usercount threadcount
 
 	exit 1
 fi
@@ -56,9 +56,28 @@ while
 do
 
 	DT=`date '+%Y%m%d_%H%M%S'`
-	echo "Starting a $DURATION second run at ${CT} Transactions Per Second"
-	java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} ${DURATION} 60 | tee -a $HOME/logs/${DT}_charging_`uname -n`_${CT}.lst 
+	echo "Starting a $DURATION second run  of $TC threads, each at ${CT} Transactions Per Second"
+
+	T=1
+
+	while 
+		[ "$T" -le "$TC" ]
+	do
+
+		echo Starting thread $T at $CT TPS...
+		java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 > $HOME/logs/${DT}_charging_`uname -n`_${CT}_${T}.lst &
+		T=`expr $T + 1`
+		sleep 1
+
+	done
+
+	echo Waiting for threads to finish...
+
+	wait 
+	sleep 15
+
 	CT=`expr $CT + ${INC}`
+
 done
 
 
