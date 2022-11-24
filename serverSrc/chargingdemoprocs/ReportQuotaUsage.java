@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.Random;
 
 /* This file is part of VoltDB.
- * Copyright (C) 2008-2020 VoltDB Inc.
+ * Copyright (C) 2008-2022 VoltDB Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -85,7 +85,7 @@ public class ReportQuotaUsage extends VoltProcedure {
         VoltTable[] results1 = voltExecuteSQL();
         VoltTable userTable = results1[0];
         VoltTable sameTxnTable = results1[1];
- 
+
         // Sanity check: Does this user exist?
         if (!userTable.advanceRow()) {
             throw new VoltAbortException("User " + userId + " does not exist");
