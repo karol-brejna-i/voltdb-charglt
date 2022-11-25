@@ -606,8 +606,15 @@ public abstract class BaseChargingDemo {
 
         long transactionsPerMs = tranCount / (System.currentTimeMillis() - startMsRun);
         msg("processed " + transactionsPerMs + " entries per ms while doing transactions...");
+        
+        long lockFailCount = 0;
+        for (int i = 0; i < userCount; i++) {
+            lockFailCount += userState[i].getLockedBySomeoneElseCount();
+        }
+
         msg(inFlightCount + " events where a tx was in flight were observed");
-        msg(lockCount + " users locked");
+        msg(lockCount + " lock attempts");
+        msg(lockFailCount + " lock attempt failures");
         msg(fullUpdate + " full updates");
         msg(deltaUpdate + " delta updates");
 

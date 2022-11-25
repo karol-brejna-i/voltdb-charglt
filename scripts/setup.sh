@@ -26,6 +26,7 @@
 . $HOME/.profile
 
 cd
+mkdir logs 2> /dev/null
 cd voltdb-charglt/ddl
 
 sqlcmd --servers=vdb1 < create_db.sql

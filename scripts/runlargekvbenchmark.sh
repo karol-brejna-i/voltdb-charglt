@@ -25,15 +25,19 @@
 . $HOME/.profile
 
 ST=$1
-USERCOUNT=$2
-JSONSIZE=$3
-DELTAPROP=$4
-DURATION=1200
+MX=$2
+INC=$3
+USERCOUNT=$4
+JSONSIZE=$5
+DELTAPROP=$6
+TC=$7
+
+DURATION=120
 
 if 	
-	[ "$ST" = "" -o "$USERCOUNT" = "" -o "$JSONSIZE" = "" -o "$DELTAPROP" = "" ]
+	[ "$ST" = "" -o "$MX" = "" -o "$INC" = "" -o "$USERCOUNT" = "" -o "$JSONSIZE" = "" -o "$DELTAPROP" = "" -o "$TC" = "" ]
 then
-	echo Usage: $0 tps usercount blobsize percent_of_changes
+	echo Usage: $0 start_tps end_tps inc_tps usercount blobsize percent_of_changes threadcount
 
 	exit 1
 fi
@@ -50,11 +54,35 @@ kill -9 `ps -deaf | grep ChargingDemoTransactions.jar  | grep -v grep | awk '{ p
 
 sleep 2 
 
-DT=`date '+%Y%m%d_%H%M'`
+CT=${ST}
 
+while
+	[ "${CT}" -le "${MX}" ]
+do
 
-echo "Starting a $DURATION second run at ${ST} Transactions Per Second"
-echo `date` java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${ST} $DURATION 60 $JSONSIZE $DELTAPROP >> $HOME/logs/activity.log
-java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${ST} $DURATION 60 $JSONSIZE $DELTAPROP | tee -a $HOME/logs/${DT}_kv_`uname -n`_${ST}.lst 
+	DT=`date '+%Y%m%d_%H%M%S'`
+	echo "Starting a $DURATION second run  of $TC threads, each at ${CT} Transactions Per Second"
 
-exit 0
+	T=1
+
+	while 
+		[ "$T" -le "$TC" ]
+	do
+
+		echo Starting thread $T at $CT TPS...
+		echo `date` java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 $JSONSIZE $DELTAPROP >> $HOME/logs/activity.log
+		java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 $JSONSIZE $DELTAPROP > $HOME/logs/${DT}_kv_`uname -n`_${ST}_S{T}.lst  & 
+		T=`expr $T + 1`
+		sleep 1
+
+	done
+
+	echo Waiting for threads to finish...
+
+	wait 
+	sleep 15
+
+	CT=`expr $CT + ${INC}`
+
+done
+

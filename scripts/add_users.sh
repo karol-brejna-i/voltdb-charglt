@@ -38,6 +38,11 @@ then
 fi
 
 cd
+mkdir logs 2> /dev/null
+
 cd voltdb-charglt/jars
 
+echo `date` java ${JVMOPTS} -jar CreateChargingDemoData.jar `cat $HOME/.vdbhostnames`  $USERCOUNT $TPMS $MAX_CREDIT >> $HOME/logs/activity.log
 java ${JVMOPTS} -jar CreateChargingDemoData.jar `cat $HOME/.vdbhostnames`  $USERCOUNT $TPMS $MAX_CREDIT
+
+

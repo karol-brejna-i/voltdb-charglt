@@ -24,16 +24,16 @@
 
 . $HOME/.profile
 
-ST=$1
-USERCOUNT=$2
-JSONSIZE=$3
-DELTAPROP=$4
-DURATION=1200
+USERCOUNT=$1
+ST=$2
+DURATION=$3
+MAXCREDIT=$4
+KPORT=9092
 
 if 	
-	[ "$ST" = "" -o "$USERCOUNT" = "" -o "$JSONSIZE" = "" -o "$DELTAPROP" = "" ]
+	[ "$ST" = "" -o "$USERCOUNT" = "" -o "$DURATION" = "" -o "$MAXCREDIT" = "" ]
 then
-	echo Usage: $0 tps usercount blobsize percent_of_changes
+	echo Usage: $0 usercount tps duration max_credit
 
 	exit 1
 fi
@@ -43,18 +43,14 @@ mkdir logs 2> /dev/null
 
 cd voltdb-charglt/jars 
 
-# silently kill off any copy that is currently running...
-kill -9 `ps -deaf | grep ChargingDemoKVStore.jar  | grep -v grep | awk '{ print $2 }'` 2> /dev/null
-kill -9 `ps -deaf | grep ChargingDemoTransactions.jar  | grep -v grep | awk '{ print $2 }'` 2> /dev/null
-
-
-sleep 2 
 
 DT=`date '+%Y%m%d_%H%M'`
 
+KHOSTS=`cat $HOME/.vdbhostnames | sed '1,$s/,/:'${KPORT}',/g'`:${KPORT}
 
 echo "Starting a $DURATION second run at ${ST} Transactions Per Second"
-echo `date` java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${ST} $DURATION 60 $JSONSIZE $DELTAPROP >> $HOME/logs/activity.log
-java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${ST} $DURATION 60 $JSONSIZE $DELTAPROP | tee -a $HOME/logs/${DT}_kv_`uname -n`_${ST}.lst 
+echo `date` java ${JVMOPTS}  -jar KafkaCreditDemo.jar ${KHOSTS} ${USERCOUNT} ${ST} $DURATION $MAXCREDIT  >> $HOME/logs/activity.log
+java ${JVMOPTS}  -jar KafkaCreditDemo.jar ${KHOSTS} ${USERCOUNT} ${ST} $DURATION $MAXCREDIT | tee -a $HOME/logs/${DT}_kafka__`uname -n`_${ST}.lst
+sleep 2 
 
 exit 0

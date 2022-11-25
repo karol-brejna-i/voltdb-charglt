@@ -28,6 +28,9 @@
 TPS=200
 
 cd
+mkdir logs 2> /dev/null
+
 cd voltdb-charglt
 cd jars
+echo `date` java  ${JVMOPTS}  -jar DeleteChargingDemoData.jar  `cat $HOME/.vdbhostnames`  $TPS >> $HOME/logs/activity.log
 java  ${JVMOPTS}  -jar DeleteChargingDemoData.jar  `cat $HOME/.vdbhostnames`  $TPS

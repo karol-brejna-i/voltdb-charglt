@@ -66,6 +66,7 @@ do
 	do
 
 		echo Starting thread $T at $CT TPS...
+		echo `date` java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 >> $HOME/logs/activity.log
 		java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 > $HOME/logs/${DT}_charging_`uname -n`_${CT}_${T}.lst &
 		T=`expr $T + 1`
 		sleep 1

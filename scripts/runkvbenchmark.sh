@@ -61,7 +61,8 @@ do
 
 	DT=`date '+%Y%m%d_%H%M'`
 	echo "Starting a $DURATION second run at ${ST} Transactions Per Second"
-	java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 $JSONSIZE $DELTAPROP | tee -a $HOME/logs/${DT}_kv__`uname -n`_${ST}.lst 
+	echo `date` java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 $JSONSIZE $DELTAPROP >> $HOME/logs/activity.log
+	java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 $JSONSIZE $DELTAPROP | tee -a $HOME/logs/${DT}_kv_`uname -n`_${ST}.lst 
 	CT=`expr $CT + ${INC}`
 
 	sleep 15

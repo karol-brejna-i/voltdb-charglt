@@ -58,6 +58,7 @@ do
 
 	DT=`date '+%Y%m%d_%H%M%S'`
 	echo "Starting a $DURATION second run at ${CT} Transactions Per Second"
+	echo `date` java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} ${DURATION} 60 >> $HOME/logs/activity.log
 	java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} ${DURATION} 60 | tee -a $HOME/logs/${DT}_charging_`uname -n`_${CT}.lst 
 	CT=`expr $CT + ${INC}`
 done
