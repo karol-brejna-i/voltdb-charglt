@@ -515,9 +515,6 @@ public abstract class BaseChargingDemo {
 
         Gson gson = new Gson();
 
-        // Tell the system everyone has zero credit, even though that's probably
-        // not true. This will result in lots of AddCredits, by the end of which
-        // state will be up to date.
         for (int i = 0; i < userCount; i++) {
             userState[i] = new UserKVState(i);
         }
@@ -558,7 +555,13 @@ public abstract class BaseChargingDemo {
 
                 inFlightCount++;
 
-            } else if (userState[oursession].getUserStatus() == UserKVState.STATUS_UNLOCKED) {
+            } else if (userState[oursession].getUserStatus() == UserKVState.STATUS_LOCKED_BY_SOMEONE_ELSE) {
+
+                userState[oursession].setStatus(UserKVState.STATUS_TRYING_TO_LOCK);
+                mainClient.callProcedure(userState[oursession], "GetAndLockUser", oursession);
+                lockCount++;
+
+            }  else if (userState[oursession].getUserStatus() == UserKVState.STATUS_UNLOCKED) {
 
                 userState[oursession].setStatus(UserKVState.STATUS_TRYING_TO_LOCK);
                 mainClient.callProcedure(userState[oursession], "GetAndLockUser", oursession);

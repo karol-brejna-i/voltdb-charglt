@@ -35,129 +35,153 @@ import chargingdemoprocs.ReferenceData;
  */
 public class UserKVState implements ProcedureCallback {
 
-	static final byte STATUS_UNLOCKED = 0;
-	static final byte STATUS_TRYING_TO_LOCK = 1;
-	static final byte STATUS_LOCKED = 2;
-	static final byte STATUS_UPDATING = 3;
+    static final byte STATUS_UNLOCKED = 0;
+    static final byte STATUS_TRYING_TO_LOCK = 1;
+    static final byte STATUS_LOCKED = 2;
+    static final byte STATUS_UPDATING = 3;
+    static final byte STATUS_LOCKED_BY_SOMEONE_ELSE = 4;
 
-	/**
-	 * Unique ID given to us by VoltDB that we use to prove that we are the owner of
-	 * this lock.
-	 */
-	String lockId = null;
+    /**
+     * Unique ID given to us by VoltDB that we use to prove that we are the owner of
+     * this lock.
+     */
+    String lockId = null;
 
-	/**
-	 * ID of user.
-	 */
-	int id = 0;
+    /**
+     * ID of user.
+     */
+    int id = 0;
 
-	/**
-	 * Where we are in the update cycle..
-	 */
-	int userState = STATUS_UNLOCKED;
+    /**
+     * Where we are in the update cycle..
+     */
+    int userState = STATUS_UNLOCKED;
 
-	/**
-	 * When a transaction started, or zero if there isn't one.
-	 */
-	long txStartMs = 0;
+    /**
+     * When a transaction started, or zero if there isn't one.
+     */
+    long txStartMs = 0;
+    
+    /**
+     * Times record was locked by another session
+     */
+    long lockedBySomeoneElseCount = 0;;
 
-	/**
-	 * Create a record for a user.
-	 *
-	 * @param id
-	 */
-	public UserKVState(int id) {
-		this.id = id;
-		userState = STATUS_UNLOCKED;
+    /**
+     * Create a record for a user.
+     *
+     * @param id
+     */
+    public UserKVState(int id) {
+        this.id = id;
+        userState = STATUS_UNLOCKED;
 
-	}
+    }
 
-	public void setStatus(int newStatus) {
-		userState = newStatus;
-	}
+    public void setStatus(int newStatus) {
+        userState = newStatus;
+    }
 
-	/**
-	 * Report start of transaction.
-	 */
-	public void startTran() {
+    /**
+     * Report start of transaction.
+     */
+    public void startTran() {
 
-		txStartMs = System.currentTimeMillis();
-	}
+        txStartMs = System.currentTimeMillis();
+    }
 
-	/**
-	 * @return the txInFlight
-	 */
-	public boolean isTxInFlight() {
+    /**
+     * @return the txInFlight
+     */
+    public boolean isTxInFlight() {
 
-		if (txStartMs > 0) {
-			return true;
-		}
+        if (txStartMs > 0) {
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	public int getUserStatus() {
-		return userState;
-	}
+    public int getUserStatus() {
+        return userState;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		String desc = "UserState [id=" + id + ", userStatus=" + userState + ", lockId=" + lockId
-				+ ", productSessionIds=" + ", txStartMs=" + txStartMs + " ]";
+ 
 
-		return desc;
-	}
+    @Override
+    public void clientCallback(ClientResponse arg0) throws Exception {
 
-	@Override
-	public void clientCallback(ClientResponse arg0) throws Exception {
+        if (arg0.getStatus() == ClientResponse.SUCCESS) {
 
-		if (arg0.getStatus() == ClientResponse.SUCCESS) {
+            byte statusByte = arg0.getAppStatus();
 
-			byte statusByte = arg0.getAppStatus();
+            if (userState == STATUS_UNLOCKED) {
+                BaseChargingDemo.msg("UserKVState.clientCallback: got app status of " + arg0.getAppStatusString());
+            } else if (userState == STATUS_TRYING_TO_LOCK) {
 
-			if (userState == STATUS_UNLOCKED) {
-				BaseChargingDemo.msg("UserKVState.clientCallback: got app status of " + arg0.getAppStatusString());
-			} else if (userState == STATUS_TRYING_TO_LOCK) {
+                if (statusByte == ReferenceData.STATUS_RECORD_HAS_BEEN_SOFTLOCKED) {
 
-				if (statusByte == ReferenceData.STATUS_RECORD_HAS_BEEN_SOFTLOCKED
-						|| statusByte == ReferenceData.STATUS_RECORD_ALREADY_SOFTLOCKED) {
+                    userState = STATUS_LOCKED;
+                    lockId = arg0.getAppStatusString();
 
-					userState = STATUS_LOCKED;
-					lockId = arg0.getAppStatusString();
+                } else if (statusByte == ReferenceData.STATUS_RECORD_ALREADY_SOFTLOCKED) {
 
-				} else {
-					userState = STATUS_UNLOCKED;
-				}
-			} else if (userState == STATUS_UPDATING) {
+                    userState = STATUS_LOCKED_BY_SOMEONE_ELSE;
+                    lockId = "";
+                    lockedBySomeoneElseCount++;
 
-				lockId = "";
-				userState = STATUS_UNLOCKED;
-			}
+                } else {
+                    userState = STATUS_UNLOCKED;
+                }
+            } else if (userState == STATUS_UPDATING) {
 
-		} else {
-			BaseChargingDemo.msg("UserKVState.clientCallback: got status of " + arg0.getStatusString());
-		}
+                lockId = "";
+                userState = STATUS_UNLOCKED;
+            }
 
-		txStartMs = 0;
-	}
+        } else {
+            BaseChargingDemo.msg("UserKVState.clientCallback: got status of " + arg0.getStatusString());
+        }
 
-	/**
-	 * @return the lockId
-	 */
-	public String getLockId() {
-		return lockId;
-	}
+        txStartMs = 0;
+    }
 
-	/**
-	 * @param lockId the lockId to set
-	 */
-	public void setLockId(String lockId) {
-		this.lockId = lockId;
-	}
+    /**
+     * @return the lockId
+     */
+    public String getLockId() {
+        return lockId;
+    }
+
+    /**
+     * @param lockId the lockId to set
+     */
+    public void setLockId(String lockId) {
+        this.lockId = lockId;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("UserKVState [lockId=");
+        builder.append(lockId);
+        builder.append(", id=");
+        builder.append(id);
+        builder.append(", userState=");
+        builder.append(userState);
+        builder.append(", txStartMs=");
+        builder.append(txStartMs);
+        builder.append(", lockedBySomeoneElseCount=");
+        builder.append(lockedBySomeoneElseCount);
+        builder.append("]");
+        return builder.toString();
+    }
+
+    /**
+     * @return the lockedBySomeoneElseCount
+     */
+    public long getLockedBySomeoneElseCount() {
+        return lockedBySomeoneElseCount;
+    }
 
 }

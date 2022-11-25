@@ -45,6 +45,7 @@ mkdir logs 2> /dev/null
 cd voltdb-charglt/jars 
 
 # silently kill off any copy that is currently running...
+kill -9 `ps -deaf | grep ChargingDemoKVStore.jar  | grep -v grep | awk '{ print $2 }'` 2> /dev/null
 kill -9 `ps -deaf | grep ChargingDemoTransactions.jar  | grep -v grep | awk '{ print $2 }'` 2> /dev/null
 
 sleep 2 
