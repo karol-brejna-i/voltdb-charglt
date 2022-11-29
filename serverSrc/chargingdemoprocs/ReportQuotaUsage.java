@@ -63,12 +63,21 @@ public class ReportQuotaUsage extends VoltProcedure {
 
 	// @formatter:on
 
+    /**
+     * @param userId - Identifies a user
+     * @param unitsUsed - How many units of credit were used. Initially this will be zero, as we start by reserving credit.
+     * @param unitsWanted - How many units of credit the user is looking for. Some or all of this may be granted.
+     * @param inputSessionId - a Unique ID for a session. A  negative number means a new session.
+     * @param txnId
+     * @return
+     * @throws VoltAbortException
+     */
     public VoltTable[] run(long userId, int unitsUsed, int unitsWanted, long inputSessionId, String txnId)
             throws VoltAbortException {
 
         long sessionId = inputSessionId;
 
-        if (sessionId <= 0) {
+        if (sessionId == Long.MIN_VALUE) {
             sessionId = this.getUniqueId();
         }
 

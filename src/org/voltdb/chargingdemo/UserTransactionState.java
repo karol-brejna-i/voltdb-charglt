@@ -27,8 +27,6 @@ package org.voltdb.chargingdemo;
  * Class to keep track of how many transactions a given user has. It also keeps
  * track of whether a transaction is in progress and when it started.
  *
- * @author drolfe
- *
  */
 public class UserTransactionState {
 
@@ -37,7 +35,10 @@ public class UserTransactionState {
      */
     public int id = 0;
 
-    public long sessionId = -1;
+    /**
+     * Id of user session, or Long.MIN_VALUE if unknown.
+     */
+    public long sessionId = Long.MIN_VALUE;
 
     /**
      * When a transaction started, or zero if there isn't one.

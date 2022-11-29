@@ -73,7 +73,7 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
 
 					long balance = balanceTable.getLong("balance");
 					userTransactionState.sessionId = balanceTable.getLong("sessionid");
-
+					
 					long reserved = 0;
 
 					if (reservationTable.advanceRow()) {
