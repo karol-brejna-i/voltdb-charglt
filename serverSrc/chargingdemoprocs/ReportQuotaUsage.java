@@ -60,8 +60,6 @@ public class ReportQuotaUsage extends VoltProcedure {
 	public static final SQLStmt createAllocation = new SQLStmt("INSERT INTO user_usage_table "
 			+ "(userid, allocated_amount,sessionid, lastdate) VALUES (?,?,?,NOW);");
 
-	private static final long FIVE_MINUTES_AGO_IN_MS = 1000 * 60 * -5;
-
 
 	// @formatter:on
 
@@ -98,8 +96,10 @@ public class ReportQuotaUsage extends VoltProcedure {
         long amountSpent = unitsUsed * -1;
         String decision = "Spent " + amountSpent;
 
-        // Update balance
-        voltQueueSQL(reportFinancialEvent, userId, amountSpent, txnId, "Spent " + amountSpent);
+        // Report actual spending, as opposed to reservations...
+        if (amountSpent != 0) {
+            voltQueueSQL(reportFinancialEvent, userId, amountSpent, txnId, "Spent " + amountSpent);
+        }
 
         // Delete old usage record
         voltQueueSQL(delOldUsage, userId, sessionId);
