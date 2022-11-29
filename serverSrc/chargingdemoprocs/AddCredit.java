@@ -106,7 +106,7 @@ public class AddCredit extends VoltProcedure {
             // Insert a row into the stream for each user's financial events.
             // The view user_balances can then calculate actual credit
             voltQueueSQL(addTxn, userId, txnId, 0, extraCredit, "Add Credit");
-            voltQueueSQL(reportFinancialEvent, userId, extraCredit, txnId, "OK");
+            voltQueueSQL(reportFinancialEvent, userId, extraCredit, txnId, "Added " + extraCredit);
         }
 
         // Delete oldest record if old enough
