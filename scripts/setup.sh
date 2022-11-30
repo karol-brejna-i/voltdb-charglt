@@ -25,6 +25,8 @@
 
 . $HOME/.profile
 
+USERCOUNT=4000000
+
 cd
 mkdir logs 2> /dev/null
 cd voltdb-charglt/ddl
@@ -37,4 +39,4 @@ $HOME/bin/reload_dashboards.sh ChargeLt.json
 java  ${JVMOPTS}  -jar $HOME/bin/addtodeploymentdotxml.jar `cat $HOME/.vdbhostnames`  deployment $HOME/voltdb-charglt/scripts/export_and_import.xml
 
 cd ../jars
-java ${JVMOPTS} -jar CreateChargingDemoData.jar `cat $HOME/.vdbhostnames`  5000000 30 100000
+java ${JVMOPTS} -jar CreateChargingDemoData.jar `cat $HOME/.vdbhostnames`  $USERCOUNT 30 100000
