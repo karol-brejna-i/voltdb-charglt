@@ -50,7 +50,7 @@ sleep 2
 DT=`date '+%Y%m%d_%H%M'`
 
 
-echo "Starting a $DURATION second run at ${ST} Transactions Per Second"
+echo "Starting a $DURATION second run at ${ST} Transactions Per Millisecond"
 echo `date` java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${ST} $DURATION 60 >> $HOME/logs/activity.log
 java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${ST} $DURATION 60 | tee -a $HOME/logs/${DT}_charging_`uname -n`_${ST}.lst 
 

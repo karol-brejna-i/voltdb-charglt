@@ -57,7 +57,7 @@ while
 do
 
 	DT=`date '+%Y%m%d_%H%M%S'`
-	echo "Starting a $DURATION second run  of $TC threads, each at ${CT} Transactions Per Second"
+	echo "Starting a $DURATION second run  of $TC threads, each at ${CT} Transactions Per Millisecond"
 
 	T=1
 
