@@ -19,19 +19,6 @@ My own background is in telco, and the demo is a drastically simplified represen
 
 All of this seems simple, but then we have to consider various other &#39;real world&#39; factors:
 
-**Products**.
-
-Our demo phone company has 4 products. As in real life, a user can use more than one at once:
-
-| Product | Unit Cost |
-| --- | --- |
-| The phone company&#39;s  web site. Customers can always access the phone company&#39;s web site, even if they are out of money. | 0 |
-| SMS messages, per message. | 1c |
-| Domestic Internet Access per GB | 20c |
-| Roaming Internet Access per GB | $3.42 |
-| Domestic calls per minute | 3c |
-
-This means that when serving requests we need to turn the incoming request for &#39;access per GB&#39; into real money and compare it to the user&#39;s balance when deciding how much access to grant .
 
 **We have to factor in reserved balances when making decisions**
 
@@ -85,13 +72,20 @@ We also sometimes have to store device session data, which is presented to us as
 | Name | Type | Purpose | Partitioning |
 | --- | --- | --- | --- |
 | user\_table | Table | holds one record per user and the JSON payload. | userid |
-| Product\_table | Table | Holds one record per product |   |
 | User\_usage\_table | Table | holds information on active reservations of credit by a user for a product. | userid |
-| User\_balances | View |  It has one row per user and always contains the user&#39;s current credit, before we allow for reservations in &quot;user\_usage\_table&quot;. | userid |
-| User\_recent\_transactions | Table | allows us to spot duplicate transactions and also allows us to track what happened to a specific user during a run | userid |
-| allocated\_by\_product | View | How much of each product is currently reserved |   |
-| total\_balances | View | A single row listing how much credit the system holds. |   |
+| User\_recent\_transactions | Table | allows us to spot duplicate transactions and also allows us to track what happened to a specific user during a run. Rows deleted after 1 hour | userid |
 | User\_financial\_events | [Export stream](https://docs.voltactivedata.com/UsingVoltDB//ddlref_createstream.php) | inserted into when we add or spend money | userid |
+| current\_locks | View | holds one record with total count of currently locked sessions |  |
+| User\_balance | View |  It has one row per user and always contains the user&#39;s current credit, before we allow for reservations in &quot;user\_usage\_table&quot;. | userid |
+| allocated\_credit | View | One row showing how much is currently reserved in the system|   |
+| users\_sessions | View | View for examining usage by session |  userid |
+| recent\_activity\_out | View | summary of total spending per minute ||
+| recent\_activity\_in | View | summary of total credit adds per minute ||
+| cluster\_activity\_by\_users  | View | Transaction count per user | userid |
+| cluster\_activity  | View | Total Transaction count  by minute |  |
+| last|_cluster\_activity  | View | One row - last time we saw activity |  |
+
+| cluster\_users | View | A single row listing how many users the system has. |   |
 | finevent | [Export target](https://docs.voltdb.com/v7docs/UsingVoltDB/ExportConfig.php) | Where rows in user\_financial\_events end up - could be kafka, kinesis, HDFS etc | userid |
 
 
