@@ -84,7 +84,6 @@ We also sometimes have to store device session data, which is presented to us as
 | cluster\_activity\_by\_users  | View | Transaction count per user | userid |
 | cluster\_activity  | View | Total Transaction count  by minute |  |
 | last|_cluster\_activity  | View | One row - last time we saw activity |  |
-
 | cluster\_users | View | A single row listing how many users the system has. |   |
 | finevent | [Export target](https://docs.voltdb.com/v7docs/UsingVoltDB/ExportConfig.php) | Where rows in user\_financial\_events end up - could be kafka, kinesis, HDFS etc | userid |
 
