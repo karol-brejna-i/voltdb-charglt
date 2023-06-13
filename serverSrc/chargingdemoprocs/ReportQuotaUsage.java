@@ -68,7 +68,7 @@ public class ReportQuotaUsage extends VoltProcedure {
      * @param unitsUsed - How many units of credit were used. Initially this will be zero, as we start by reserving credit.
      * @param unitsWanted - How many units of credit the user is looking for. Some or all of this may be granted.
      * @param inputSessionId - a Unique ID for a session. A  negative number means a new session.
-     * @param txnId - A unique ID for the network call. This is needed so we can tell if a transaction completed, 
+     * @param txnId - A unique ID for the network call. This is needed so we can tell if a transaction completed,
      *                but didn't get back to the client.
      * @return
      * @throws VoltAbortException
@@ -76,7 +76,7 @@ public class ReportQuotaUsage extends VoltProcedure {
     public VoltTable[] run(long userId, int unitsUsed, int unitsWanted, long inputSessionId, String txnId)
             throws VoltAbortException {
 
-        // Set session ID if needed. 
+        // Set session ID if needed.
         long sessionId = inputSessionId;
 
         if (sessionId == Long.MIN_VALUE) {

@@ -25,6 +25,7 @@ package org.voltdb.chargingdemo;
 
 import org.voltdb.client.ClientResponse;
 import org.voltdb.client.ProcedureCallback;
+import org.voltdb.voltutil.stats.SafeHistogramCache;
 
 import chargingdemoprocs.ReferenceData;
 
@@ -61,19 +62,23 @@ public class UserKVState implements ProcedureCallback {
      * When a transaction started, or zero if there isn't one.
      */
     long txStartMs = 0;
-    
+
     /**
      * Times record was locked by another session
      */
-    long lockedBySomeoneElseCount = 0;;
+    long lockedBySomeoneElseCount = 0;
+
+    SafeHistogramCache shc;
 
     /**
      * Create a record for a user.
      *
      * @param id
      */
-    public UserKVState(int id) {
+    public UserKVState(int id,    SafeHistogramCache shc
+) {
         this.id = id;
+        this.shc = shc;
         userState = STATUS_UNLOCKED;
 
     }
@@ -106,7 +111,7 @@ public class UserKVState implements ProcedureCallback {
         return userState;
     }
 
- 
+
 
     @Override
     public void clientCallback(ClientResponse arg0) throws Exception {
@@ -118,6 +123,8 @@ public class UserKVState implements ProcedureCallback {
             if (userState == STATUS_UNLOCKED) {
                 BaseChargingDemo.msg("UserKVState.clientCallback: got app status of " + arg0.getAppStatusString());
             } else if (userState == STATUS_TRYING_TO_LOCK) {
+
+                shc.reportLatency(BaseChargingDemo.KV_GET, txStartMs, BaseChargingDemo.KV_GET, 250);
 
                 if (statusByte == ReferenceData.STATUS_RECORD_HAS_BEEN_SOFTLOCKED) {
 
@@ -135,8 +142,11 @@ public class UserKVState implements ProcedureCallback {
                 }
             } else if (userState == STATUS_UPDATING) {
 
+                shc.reportLatency(BaseChargingDemo.KV_PUT, txStartMs, BaseChargingDemo.KV_PUT, 250);
+
                 lockId = "";
                 userState = STATUS_UNLOCKED;
+
             }
 
         } else {
