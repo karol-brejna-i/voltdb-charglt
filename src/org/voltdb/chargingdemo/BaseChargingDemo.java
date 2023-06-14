@@ -333,13 +333,13 @@ public abstract class BaseChargingDemo {
     * @param jsonsize
     * @param mainClient
     * @param deltaProportion
-    * @return
+    * @return true if >=90% of requested throughput was achieved.
     * @throws InterruptedException
     * @throws IOException
     * @throws NoConnectionsException
     * @throws ProcCallException
     */
-   protected static long runKVBenchmark(int userCount, int tpMs, int durationSeconds, int globalQueryFreqSeconds,
+   protected static boolean runKVBenchmark(int userCount, int tpMs, int durationSeconds, int globalQueryFreqSeconds,
            int jsonsize, Client mainClient, int deltaProportion)
            throws InterruptedException, IOException, NoConnectionsException, ProcCallException {
 
@@ -465,7 +465,13 @@ public abstract class BaseChargingDemo {
 
        reportRunLatencyStats(tpMs, tps);
 
-       return tranCount;
+       // Declare victory if we got >= 90% of requested TPS...
+       if (tps / (tpMs * 1000) > .9) {
+           return true;
+           
+       }
+
+       return false;
    }
    
     /**
@@ -517,13 +523,13 @@ public abstract class BaseChargingDemo {
      * @param globalQueryFreqSeconds how often we check on global stats and a single
      *                               user
      * @param mainClient
-     * @return
+     * @return true if within 90% of targeted TPS
      * @throws InterruptedException
      * @throws IOException
      * @throws NoConnectionsException
      * @throws ProcCallException
      */
-    protected static long runTransactionBenchmark(int userCount, int tpMs, int durationSeconds,
+    protected static boolean runTransactionBenchmark(int userCount, int tpMs, int durationSeconds,
             int globalQueryFreqSeconds, Client mainClient)
             throws InterruptedException, IOException, NoConnectionsException, ProcCallException {
 
@@ -636,8 +642,14 @@ public abstract class BaseChargingDemo {
         msg("Skipped because transaction was in flight = " + inFlightCount);
 
         reportRunLatencyStats(tpMs, tps);
+        
+        // Declare victory if we got >= 90% of requested TPS...
+        if (tps / (tpMs * 1000) > .9) {
+            return true;
+            
+        }
 
-        return (long) tps;
+        return false;
     }
 
     /**

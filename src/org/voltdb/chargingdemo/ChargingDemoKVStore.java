@@ -71,11 +71,18 @@ public class ChargingDemoKVStore extends BaseChargingDemo {
 			Client mainClient = connectVoltDB(hostlist);
 
 			unlockAllRecords(mainClient);
-			runKVBenchmark(userCount, tpMs, durationSeconds, globalQueryFreqSeconds, jsonsize,
+			boolean ok = runKVBenchmark(userCount, tpMs, durationSeconds, globalQueryFreqSeconds, jsonsize,
 					mainClient,deltaProportion);
 
 			msg("Closing connection...");
 			mainClient.close();
+			
+			
+            if (ok) {
+                System.exit(0);
+            }
+            
+			System.exit(0);
 
 		} catch (Exception e) {
 			msg(e.getMessage());
