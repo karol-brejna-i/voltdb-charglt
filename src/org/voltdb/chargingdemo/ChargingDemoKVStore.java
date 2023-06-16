@@ -82,7 +82,7 @@ public class ChargingDemoKVStore extends BaseChargingDemo {
                 System.exit(0);
             }
             
-			System.exit(0);
+			System.exit(1);
 
 		} catch (Exception e) {
 			msg(e.getMessage());

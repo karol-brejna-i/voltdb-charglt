@@ -29,7 +29,7 @@ ST=$1
 MX=$2
 INC=$3
 USERCOUNT=$4
-DURATION=300
+DURATION=600
 
 if 	
 	[ "$MX" = "" -o "$ST" = "" -o "$INC" = "" -o "$USERCOUNT" = "" ]
@@ -59,7 +59,13 @@ do
 	DT=`date '+%Y%m%d_%H%M%S'`
 	echo "Starting a $DURATION second run at ${CT} Transactions Per Millisecond"
 	echo `date` java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} ${DURATION} 60 >> $HOME/logs/activity.log
-	java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} ${DURATION} 60 | tee -a $HOME/logs/${DT}_charging_`uname -n`_${CT}.lst 
+	java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} ${DURATION} 60 
+	if 
+		[ "$?" = "1" ]
+	then
+		break;
+	fi
+
 	CT=`expr $CT + ${INC}`
 done
 

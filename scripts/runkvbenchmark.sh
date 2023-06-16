@@ -30,7 +30,7 @@ INC=$3
 USERCOUNT=$4
 JSONSIZE=$5
 DELTAPROP=$6
-DURATION=120
+DURATION=600
 
 if 	
 	[ "$ST" = "" -o "$MX" = "" -o "$INC" = "" -o "$USERCOUNT" = "" -o "$JSONSIZE" = "" -o "$DELTAPROP" = "" ]
@@ -62,7 +62,13 @@ do
 	DT=`date '+%Y%m%d_%H%M'`
 	echo "Starting a $DURATION second run at ${ST} Transactions Per Second"
 	echo `date` java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 $JSONSIZE $DELTAPROP >> $HOME/logs/activity.log
-	java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 $JSONSIZE $DELTAPROP | tee -a $HOME/logs/${DT}_kv_`uname -n`_${ST}.lst 
+	java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 $JSONSIZE $DELTAPROP 
+	if
+                [ "$?" = "1" ]
+        then
+                break;
+        fi
+
 	CT=`expr $CT + ${INC}`
 
 	sleep 15
