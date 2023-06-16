@@ -29,207 +29,281 @@ package org.voltdb.voltutil.stats;
  */
 public class LatencyHistogram {
 
-	final String NUMFORMAT_DECIMAL = "% ,16.0f";
-	final String NUMFORMAT_INTEGER = "%16d";
+    final String NUMFORMAT_DECIMAL = "% ,16.0f";
+    final String NUMFORMAT_INTEGER = "%16d";
 
-	/**
-	 * Number of slots in historgram. 1000 = 0 to 999 ms...
-	 */
-	int maxSize = 1000;
-	
-	/**
-	 * Store of values, generally incremented by 1 for each ms
-	 */
-	double[] latencyHistogram = new double[0];
-	
-	/**
-	 * Store of optional comments for specific readings
-	 */
-	String[] latencyComment = new String[0];
-	
-	/**
-	 * Whether we have 'rolled over' - reached Integer.MAX_VALUE for any counter.
-	 * @see resetLatency
-	 */
-	boolean isRolledOver = false;
-	
-	/**
-	 * Optional name
-	 */
-	String name = "";
-	
+    /**
+     * Number of slots in histogram. 1000 = 0 to 999 ms...
+     */
+    int maxSize = 1000;
+
+    /**
+     * Store of values, generally incremented by 1 for each ms
+     */
+    double[] latencyHistogram = new double[0];
+
+    /**
+     * Store of optional comments for specific readings
+     */
+    String[] latencyComment = new String[0];
+
+    /**
+     * Whether we have 'rolled over' - reached Integer.MAX_VALUE for any counter.
+     * 
+     * @see resetLatency
+     */
+    boolean isRolledOver = false;
+
+    /**
+     * Optional name
+     */
+    String name = "";
+
     /**
      * Optional Description
      */
     String description = "";
-	
-	/**
-	 * Number of reports since start or rollover
-	 */
-	long reports = 0;
-	
-	/**
-	 * Highest value seen
-	 */
-	int maxUsedSize = 0;
 
+    /**
+     * Number of reports since start or rollover
+     */
+    long reports = 0;
 
-	public LatencyHistogram(int maxSize) {
-		init("", maxSize);
-	}
+    /**
+     * Highest value seen
+     */
+    int maxUsedSize = 0;
 
-	public LatencyHistogram(String name, int maxSize) {
-		init(name, maxSize);
-	}
+    /**
+     * Create a histogram of up to maxSize
+     * 
+     * @param maxSize
+     */
+    public LatencyHistogram(int maxSize) {
+        init("", maxSize);
+    }
 
-	public void init(String name, int maxSize) {
+    /**
+     * Create a named histogram of up to maxSize
+     * 
+     * @param maxSize
+     */
+    public LatencyHistogram(String name, int maxSize) {
+        init(name, maxSize);
+    }
 
-		this.name = name;
-		this.maxSize = maxSize;
+    /**
+     * Initialize histogram elements
+     * 
+     * @param name
+     * @param maxSize
+     */
+    public void init(String name, int maxSize) {
 
-		latencyHistogram = new double[maxSize];
-		latencyComment = new String[maxSize];
+        this.name = name;
+        this.maxSize = maxSize;
 
-		for (int i = 0; i < latencyComment.length; i++) {
-			latencyComment[i] = "";
-		}
+        latencyHistogram = new double[maxSize];
+        latencyComment = new String[maxSize];
 
-		resetLatency();
+        for (int i = 0; i < latencyComment.length; i++) {
+            latencyComment[i] = "";
+        }
 
-	}
+        resetLatency();
 
-	public void resetLatency() {
-		for (int i = 0; i < maxSize; i++) {
-			latencyHistogram[i] = 0;
-		}
+    }
 
-		reports = 0;
-		maxUsedSize = 0;
-	}
+    /**
+     * reset latency stats to zero. Called at start, on demand, and on rollover.
+     */
+    public void resetLatency() {
+        for (int i = 0; i < maxSize; i++) {
+            latencyHistogram[i] = 0;
+        }
 
-	public void report(int latency, String comment) {
+        reports = 0;
+        maxUsedSize = 0;
+    }
 
-		reports++;
+    /**
+     * Report a latency measurement. If it's >= maxSize it goes into the last
+     * element. Negative values are forced to zero.
+     * 
+     * @param latency
+     * @param comment
+     */
+    public void report(int latency, String comment) {
 
-		if (latency < 0) {
-			latency = 0;
-		}
+        reports++;
 
-		// Does this fit into our histogram?
-		if (latency < maxSize) {
-		    
-		    // Can we actually add 1 to the value?
-			if (latencyHistogram[latency] < Integer.MAX_VALUE) {
-				latencyHistogram[latency]++;
+        if (latency < 0) {
+            latency = 0;
+        }
 
-				if (maxUsedSize < latency) {
-					maxUsedSize = latency;
-				}
+        // Does this fit into our histogram?
+        if (latency < maxSize) {
 
-			// We can't - time for a rollover!
-			} else {
-				isRolledOver = true;
-				resetLatency();
-			}
+            // Can we actually add 1 to the value?
+            if (latencyHistogram[latency] < Integer.MAX_VALUE) {
+                latencyHistogram[latency]++;
 
-		} else {
-		    
-		    // Latencies that don't fit into histogram get squeezed into last bucket.
-			if (latencyHistogram[maxSize - 1] < Integer.MAX_VALUE) {
-			    
-				latencyHistogram[maxSize - 1]++;
+                if (maxUsedSize < latency) {
+                    maxUsedSize = latency;
+                }
 
-				if (maxUsedSize == maxSize - 1) {
-					maxUsedSize = maxSize - 1;
-				}
+                // We can't - time for a rollover!
+            } else {
+                isRolledOver = true;
+                resetLatency();
+            }
 
-			} else {
-				isRolledOver = true;
-				resetLatency();
-			}
+        } else {
 
-		}
+            // Latencies that don't fit into histogram get squeezed into last bucket.
+            if (latencyHistogram[maxSize - 1] < Integer.MAX_VALUE) {
 
-		// Update comment, if it makes sense to do so
-		if (comment != null && comment.length() > 0) {
-			if (latency < maxSize) {
-				if (latencyHistogram[latency] < Integer.MAX_VALUE) {
-					latencyComment[latency] = comment;
-				}
+                latencyHistogram[maxSize - 1]++;
 
-			} else {
-				latencyComment[maxSize - 1] = comment;
-			}
-		}
+                if (maxUsedSize == maxSize - 1) {
+                    maxUsedSize = maxSize - 1;
+                }
 
-	}
+            } else {
+                isRolledOver = true;
+                resetLatency();
+            }
 
-	public void reportLatency(long startTime, String comment) {
+        }
 
-		int latency = (int) (System.currentTimeMillis() - startTime);
+        // Update comment, if it makes sense to do so
+        if (comment != null && comment.length() > 0) {
+            if (latency < maxSize) {
+                if (latencyHistogram[latency] < Integer.MAX_VALUE) {
+                    latencyComment[latency] = comment;
+                }
 
-		report(latency, comment);
+            } else {
+                latencyComment[maxSize - 1] = comment;
+            }
+        }
 
-	}
+    }
 
-	public double peekValue(int idx) {
+    /**
+     * Report latency, assuming startTime is relative to now...
+     * 
+     * @param startTime
+     * @param comment
+     */
+    public void reportLatency(long startTime, String comment) {
 
-		if (idx < maxSize) {
-			return latencyHistogram[idx];
-		}
+        int latency = (int) (System.currentTimeMillis() - startTime);
 
-		return 0.0;
+        report(latency, comment);
 
-	}
+    }
 
-	public void pokeValue(int idx, double value) {
+    /**
+     * Inspect a specific latency value
+     * 
+     * @param idx
+     * @return
+     */
+    public double peekValue(int idx) {
 
-		if (idx < maxSize) {
-			reports -= latencyHistogram[idx];
-			reports += value;
-			latencyHistogram[idx] = value;
-		}
+        if (idx < maxSize) {
+            return latencyHistogram[idx];
+        }
 
-	}
+        return 0.0;
 
-	public void pokeReports(long reports) {
+    }
 
-		this.reports = reports;
-	}
+    /**
+     * Change a specific latency value.
+     * 
+     * @param idx
+     * @param value
+     */
+    public void pokeValue(int idx, double value) {
 
-	public double[] getLatencyHistogram() {
-		return latencyHistogram;
-	}
+        if (idx < maxSize && idx >= 0) {
+            reports -= latencyHistogram[idx];
+            reports += value;
+            latencyHistogram[idx] = value;
 
-	public String[] getLatencyComment() {
-		return latencyComment;
-	}
+            if (maxUsedSize < idx) {
+                maxUsedSize = idx;
+            }
 
-	public int getMaxUsedSize() {
+        }
 
-		return maxUsedSize;
-	}
+    }
 
-	public int getLatencyPct(double pct) {
+    /**
+     * Change reports number. This could break things.
+     * 
+     * @param reports
+     */
+    public void pokeReports(long reports) {
 
-		final double target = getLatencyTotal() * (pct / 100);
-		double runningTotal = latencyHistogram[0];
-		int matchValue = 0;
+        this.reports = reports;
+    }
 
-		for (int i = 1; i < latencyHistogram.length; i++) {
+    /**
+     * @return a histogram
+     */
+    public double[] getLatencyHistogram() {
+        return latencyHistogram;
+    }
 
-			if (runningTotal >= target) {
-				break;
-			}
+    /**
+     * @return comments for histogram
+     */
+    public String[] getLatencyComment() {
+        return latencyComment;
+    }
 
-			matchValue = i;
-			runningTotal = runningTotal + (i * latencyHistogram[i]);
+    /**
+     * @return largest element used
+     */
+    public int getMaxUsedSize() {
 
-		}
+        return maxUsedSize;
+    }
 
-		return matchValue;
-	}
+    /**
+     * Assuming this is, in fact latency, return how may milliseconds are needed to
+     * 'cover' a given percentage.
+     * 
+     * @param pct
+     * @return how many reports are <= pct
+     */
+    public int getLatencyPct(double pct) {
 
+        final double target = getLatencyTotal() * (pct / 100);
+        double runningTotal = latencyHistogram[0];
+        int matchValue = 0;
+
+        for (int i = 1; i < latencyHistogram.length; i++) {
+
+            if (runningTotal >= target) {
+                break;
+            }
+
+            matchValue = i;
+            runningTotal = runningTotal + (i * latencyHistogram[i]);
+
+        }
+
+        return matchValue;
+    }
+
+    /**
+     * @return total amount of time we have tracked. Note that if we have events
+     *         that are higher than maxSize this number will be short.
+     */
     public double getLatencyTotal() {
 
         double runningTotal = 0.0;
@@ -241,111 +315,149 @@ public class LatencyHistogram {
         return runningTotal;
     }
 
+    /**
+     * @return average latency.
+     */
     public double getLatencyAverage() {
 
-        return getLatencyTotal() / reports ;
+        return getLatencyTotal() / reports;
     }
 
-	public double getEventTotal() {
+    /**
+     * @return total number of events seen, not how much time they collectively
+     *         took.
+     */
+    public double getEventTotal() {
 
-		double runningTotal = 0.0;
+        double runningTotal = 0.0;
 
-		for (double element : latencyHistogram) {
-			runningTotal += element ;
-		}
+        for (double element : latencyHistogram) {
+            runningTotal += element;
+        }
 
-		return runningTotal;
-	}
+        return runningTotal;
+    }
 
-	public String toStringShort() {
-		StringBuffer b = new StringBuffer(name);
+    /**
+     * @return terse one line summary.
+     */
+    public String toStringShort() {
+        StringBuffer b = new StringBuffer(name);
 
-		b.append(" ");
-		b.append(description);
-		b.append(System.lineSeparator());
+        b.append(" ");
+        b.append(description);
+        b.append(System.lineSeparator());
 
         b.append(" Reports=");
         b.append(String.format(NUMFORMAT_INTEGER, reports));
         b.append(" Average=");
-        b.append(String.format(NUMFORMAT_DECIMAL, getLatencyAverage() ));
-		b.append(", Total=");
-		b.append(String.format(NUMFORMAT_DECIMAL, getLatencyTotal()));
-		b.append(", 50%=");
-		b.append(String.format(NUMFORMAT_INTEGER, getLatencyPct(50)));
-		b.append(", 95%=");
-		b.append(String.format(NUMFORMAT_INTEGER, getLatencyPct(95)));
-		b.append(", 99%=");
-		b.append(String.format(NUMFORMAT_INTEGER, getLatencyPct(99)));
-		b.append(", 99.5%=");
-		b.append(String.format(NUMFORMAT_INTEGER, getLatencyPct(99.5)));
-		b.append(", 99.95%=");
-		b.append(String.format(NUMFORMAT_INTEGER, getLatencyPct(99.95)));
-		b.append(", Max=");
-		b.append(String.format(NUMFORMAT_INTEGER, maxUsedSize));
+        b.append(String.format(NUMFORMAT_DECIMAL, getLatencyAverage()));
+        b.append(", Total=");
+        b.append(String.format(NUMFORMAT_DECIMAL, getLatencyTotal()));
+        b.append(", 50%=");
+        b.append(String.format(NUMFORMAT_INTEGER, getLatencyPct(50)));
+        b.append(", 95%=");
+        b.append(String.format(NUMFORMAT_INTEGER, getLatencyPct(95)));
+        b.append(", 99%=");
+        b.append(String.format(NUMFORMAT_INTEGER, getLatencyPct(99)));
+        b.append(", 99.5%=");
+        b.append(String.format(NUMFORMAT_INTEGER, getLatencyPct(99.5)));
+        b.append(", 99.95%=");
+        b.append(String.format(NUMFORMAT_INTEGER, getLatencyPct(99.95)));
+        b.append(", Max=");
+        b.append(String.format(NUMFORMAT_INTEGER, maxUsedSize));
 
-		if (isRolledOver) {
-			b.append(" ROLLED OVER");
-		}
+        if (isRolledOver) {
+            b.append(" ROLLED OVER");
+        }
 
-		return b.toString();
-	}
+        return b.toString();
+    }
 
-	@Override
-	public String toString() {
-		StringBuffer b = new StringBuffer(toStringShort());
+    @Override
+    public String toString() {
+        StringBuffer b = new StringBuffer(toStringShort());
 
-		b.append("\n");
+        b.append("\n");
 
-		for (int i = 0; i < latencyHistogram.length; i++) {
-			if (latencyHistogram[i] != 0) {
-				if (i == (latencyHistogram.length -1)) {
-					b.append(">= ");
-				}
-				b.append(i);
-				b.append("\t");
-				b.append(latencyHistogram[i]);
-				b.append("\t");
-				b.append(latencyComment[i]);
-				b.append("\n");
-			}
-		}
+        for (int i = 0; i < latencyHistogram.length; i++) {
+            if (latencyHistogram[i] != 0) {
+                if (i == (latencyHistogram.length - 1)) {
+                    b.append(">= ");
+                }
+                b.append(i);
+                b.append("\t");
+                b.append(latencyHistogram[i]);
+                b.append("\t");
+                b.append(latencyComment[i]);
+                b.append("\n");
+            }
+        }
 
-		return b.toString();
-	}
+        return b.toString();
+    }
 
-	public boolean isHasRolledOver() {
-		return isRolledOver;
-	}
+    /**
+     * @return whether we have ever reached Integer.MAX_VALUE...
+     */
+    public boolean isHasRolledOver() {
+        return isRolledOver;
+    }
 
-	public static LatencyHistogram subtract(String name, LatencyHistogram bigThing, LatencyHistogram smallThing) {
-		int size = bigThing.getMaxUsedSize();
+    /**
+     * Method for when you need to subtract two histograms. This happens when you
+     * are tracking different parts of a lifecycle and want to break down latency
+     * into steps.
+     * <p>
+     * Say you have a lifecycle that goes a->b->c->d. You have histograms for a->d
+     * and b->c. By subtracting them you can create a->b+c->d
+     * 
+     * @param name       Name for your new histogram
+     * @param bigThing   thing that has the bigger values
+     * @param smallThing thing that has the smaller values
+     * @return a new LatencyHistogram that is bigThing - smallThing
+     */
+    public static LatencyHistogram subtract(String name, LatencyHistogram bigThing, LatencyHistogram smallThing) {
+        int size = bigThing.getMaxUsedSize();
 
-		if (smallThing.getMaxUsedSize() > size) {
-			size = smallThing.getMaxUsedSize();
-		}
+        if (smallThing.getMaxUsedSize() > size) {
+            size = smallThing.getMaxUsedSize();
+        }
 
-		LatencyHistogram newHist = new LatencyHistogram(name, size);
+        LatencyHistogram newHist = new LatencyHistogram(name, size);
 
-		for (int i = 0; i < size; i++) {
-			double bigVal = bigThing.peekValue(i);
-			double smallVal = smallThing.peekValue(i);
-			newHist.pokeValue(i, (bigVal - smallVal));
-		}
+        for (int i = 0; i < size; i++) {
+            double bigVal = bigThing.peekValue(i);
+            double smallVal = smallThing.peekValue(i);
+            newHist.pokeValue(i, (bigVal - smallVal));
+        }
 
-		newHist.pokeReports(bigThing.reports);
+        newHist.pokeReports(bigThing.reports);
 
-		return newHist;
-	}
+        return newHist;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    /**
+     * @return description
+     */
+    public String getDescription() {
+        return description;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    /**
+     * Update description
+     * 
+     * @param description
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
+    /**
+     * @return true if this histogram has been used
+     */
     public boolean hasReports() {
+
         if (reports > 0) {
             return true;
         }
