@@ -228,13 +228,19 @@ public class LatencyHistogram {
      */
     public void pokeValue(int idx, double value) {
 
-        if (idx < maxSize && idx >= 0) {
-            reports -= latencyHistogram[idx];
-            reports += value;
-            latencyHistogram[idx] = value;
+        int actualIdx = idx;
 
-            if (maxUsedSize < idx) {
-                maxUsedSize = idx;
+        if (actualIdx > maxSize -1) {
+            actualIdx = maxSize -1;
+        }
+
+        if (actualIdx >= 0) {
+            reports -= latencyHistogram[actualIdx];
+            reports += value;
+            latencyHistogram[actualIdx] = value;
+
+            if (maxUsedSize < actualIdx) {
+                maxUsedSize = actualIdx;
             }
 
         }
