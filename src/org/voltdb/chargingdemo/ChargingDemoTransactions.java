@@ -75,6 +75,7 @@ public class ChargingDemoTransactions extends BaseChargingDemo {
 			    System.exit(0);
 			}
 			
+            msg(UNABLE_TO_MEET_REQUESTED_TPS);
 			System.exit(1);
 			
 

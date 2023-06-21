@@ -31,7 +31,8 @@ import org.voltdb.client.Client;
 
 public class ChargingDemoKVStore extends BaseChargingDemo {
 
-	/**
+
+    /**
 	 * @param args
 	 */
 	public static void main(String[] args) {
@@ -82,6 +83,7 @@ public class ChargingDemoKVStore extends BaseChargingDemo {
                 System.exit(0);
             }
             
+            msg(UNABLE_TO_MEET_REQUESTED_TPS);
 			System.exit(1);
 
 		} catch (Exception e) {

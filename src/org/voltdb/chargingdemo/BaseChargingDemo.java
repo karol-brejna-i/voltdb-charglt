@@ -81,6 +81,7 @@ public abstract class BaseChargingDemo {
 
     public static SafeHistogramCache shc = SafeHistogramCache.getInstance();
 
+    public static final String UNABLE_TO_MEET_REQUESTED_TPS = "UNABLE_TO_MEET_REQUESTED_TPS";
 
     /**
      * Print a formatted message.
