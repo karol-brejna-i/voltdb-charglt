@@ -64,6 +64,11 @@ public class UserKVState implements ProcedureCallback {
     long txStartMs = 0;
 
     /**
+     * Last time record was known to be locked by someone else...
+     */
+    long otherLockTimeMs = 0;
+
+    /**
      * Times record was locked by another session
      */
     long lockedBySomeoneElseCount = 0;
@@ -75,8 +80,7 @@ public class UserKVState implements ProcedureCallback {
      *
      * @param id
      */
-    public UserKVState(int id,    SafeHistogramCache shc
-) {
+    public UserKVState(int id, SafeHistogramCache shc) {
         this.id = id;
         this.shc = shc;
         userState = STATUS_UNLOCKED;
@@ -111,8 +115,6 @@ public class UserKVState implements ProcedureCallback {
         return userState;
     }
 
-
-
     @Override
     public void clientCallback(ClientResponse arg0) throws Exception {
 
@@ -136,6 +138,7 @@ public class UserKVState implements ProcedureCallback {
                     userState = STATUS_LOCKED_BY_SOMEONE_ELSE;
                     lockId = "";
                     lockedBySomeoneElseCount++;
+                    otherLockTimeMs = System.currentTimeMillis();
 
                 } else {
                     userState = STATUS_UNLOCKED;
@@ -153,6 +156,7 @@ public class UserKVState implements ProcedureCallback {
             BaseChargingDemo.msg("UserKVState.clientCallback: got status of " + arg0.getStatusString());
         }
 
+        // End transaction
         txStartMs = 0;
     }
 
@@ -192,6 +196,13 @@ public class UserKVState implements ProcedureCallback {
      */
     public long getLockedBySomeoneElseCount() {
         return lockedBySomeoneElseCount;
+    }
+
+    /**
+     * @return the otherLockTimeMs
+     */
+    public long getOtherLockTimeMs() {
+        return otherLockTimeMs;
     }
 
 }

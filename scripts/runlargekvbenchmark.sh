@@ -55,13 +55,15 @@ kill -9 `ps -deaf | grep ChargingDemoTransactions.jar  | grep -v grep | awk '{ p
 sleep 2 
 
 CT=${ST}
+DT=`date '+%Y%m%d_%H%M%S'`
 
 while
 	[ "${CT}" -le "${MX}" ]
 do
 
-	DT=`date '+%Y%m%d_%H%M%S'`
 	echo "Starting a $DURATION second run  of $TC threads, each at ${CT} Transactions Per Millisecond"
+
+	EACH_TPS=`expr ${CT} / ${TC}`
 
 	T=1
 
@@ -69,9 +71,9 @@ do
 		[ "$T" -le "$TC" ]
 	do
 
-		echo Starting thread $T at $CT TPS...
-		echo `date` java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 $JSONSIZE $DELTAPROP >> $HOME/logs/activity.log
-		java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 $JSONSIZE $DELTAPROP > $HOME/logs/${DT}_kv_`uname -n`_${ST}_S{T}.lst  & 
+		echo Starting thread $T at ${EACH_TPS}  KTPS...
+		echo `date` java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${EACH_TPS} $DURATION 60 $JSONSIZE $DELTAPROP >> $HOME/logs/activity.log
+		java ${JVMOPTS}  -jar ChargingDemoKVStore.jar  `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${EACH_TPS} $DURATION 60 $JSONSIZE $DELTAPROP > $HOME/logs/${DT}_kv_`uname -n`_${CT}_${T}.lst  & 
 		T=`expr $T + 1`
 		sleep 1
 
@@ -80,6 +82,24 @@ do
 	echo Waiting for threads to finish...
 
 	wait 
+	grep GREPABLE $HOME/logs/${DT}_kv_`uname -n`_${CT}_1.lst 
+
+	FAILED_FILE=/tmp/$$.tmp
+	touch ${FAILD_FILE}
+	cat $HOME/logs/${DT}_kv_`uname -n`_${CT}_1.lst | grep UNABLE_TO_MEET_REQUESTED_TPS >> ${FAILED_FILE}
+
+
+        if
+                [ -s "${FAILED_FILE}" ]
+        then
+		rm ${FAILED_FILE}
+                echo $FAILED
+                exit 1
+        fi
+  
+	rm ${FAILED_FILE}
+
+
 	sleep 15
 
 	CT=`expr $CT + ${INC}`

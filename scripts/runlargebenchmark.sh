@@ -51,12 +51,12 @@ kill -9 `ps -deaf | grep ChargingDemoTransactions.jar  | grep -v grep | awk '{ p
 sleep 2 
 
 CT=${ST}
+DT=`date '+%Y%m%d_%H%M%S'`
 
 while
 	[ "${CT}" -le "${MX}" ]
 do
 
-	DT=`date '+%Y%m%d_%H%M%S'`
 	echo "Starting a $DURATION second run  of $TC threads, each at ${CT} Transactions Per Millisecond"
 
 	T=1
@@ -76,6 +76,16 @@ do
 	echo Waiting for threads to finish...
 
 	wait 
+
+	FAILED=`grep UNABLE_TO_MEET_REQUESTED_TPS $HOME/logs/${DT}_charging_`uname -n`_${CT}_*.lst`
+
+	if
+		[ "${FAILED}" != "" ]
+	then
+		echo $FAILED
+		exit 1
+	fi
+	
 	sleep 15
 
 	CT=`expr $CT + ${INC}`

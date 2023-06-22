@@ -62,11 +62,11 @@ import org.voltdb.client.ClientResponse;
 import org.voltdb.client.NoConnectionsException;
 import org.voltdb.client.ProcCallException;
 import org.voltdb.voltutil.stats.SafeHistogramCache;
-import org.voltdb.voltutil.stats.LatencyHistogram;
 
 import com.google.gson.Gson;
 
 import chargingdemoprocs.ExtraUserData;
+import chargingdemoprocs.ReferenceData;
 
 /**
  * This is an abstract class that contains the actual logic of the demo code.
@@ -366,6 +366,7 @@ public abstract class BaseChargingDemo {
        int tranCount = 0;
        int inFlightCount = 0;
        int lockCount = 0;
+       int contestedLockCount= 0;
        int fullUpdate = 0;
        int deltaUpdate = 0;
 
@@ -394,10 +395,17 @@ public abstract class BaseChargingDemo {
 
            } else if (userState[oursession].getUserStatus() == UserKVState.STATUS_LOCKED_BY_SOMEONE_ELSE) {
 
-               userState[oursession].startTran();
-               userState[oursession].setStatus(UserKVState.STATUS_TRYING_TO_LOCK);
-               mainClient.callProcedure(userState[oursession], "GetAndLockUser", oursession);
-               lockCount++;
+               if (userState[oursession].getOtherLockTimeMs() + ReferenceData.LOCK_TIMEOUT_MS < System.currentTimeMillis()) {
+
+                   userState[oursession].startTran();
+                   userState[oursession].setStatus(UserKVState.STATUS_TRYING_TO_LOCK);
+                   mainClient.callProcedure(userState[oursession], "GetAndLockUser", oursession);
+                   lockCount++;
+
+               }else {
+                 contestedLockCount++;
+               }
+
 
            }  else if (userState[oursession].getUserStatus() == UserKVState.STATUS_UNLOCKED) {
 
@@ -456,10 +464,11 @@ public abstract class BaseChargingDemo {
 
        msg(inFlightCount + " events where a tx was in flight were observed");
        msg(lockCount + " lock attempts");
+       msg(contestedLockCount + " contested lock attempts");
        msg(lockFailCount + " lock attempt failures");
        msg(fullUpdate + " full updates");
        msg(deltaUpdate + " delta updates");
-       
+
        double tps = tranCount;
        tps = tps / (System.currentTimeMillis() - startMsRun);
        tps = (long)tps * 1000;
@@ -469,12 +478,12 @@ public abstract class BaseChargingDemo {
        // Declare victory if we got >= 90% of requested TPS...
        if (tps / (tpMs * 1000) > .9) {
            return true;
-           
+
        }
 
        return false;
    }
-   
+
     /**
      * Convenience method to remove unneeded records storing old allotments of
      * credit.
@@ -534,7 +543,7 @@ public abstract class BaseChargingDemo {
             int globalQueryFreqSeconds, Client mainClient)
             throws InterruptedException, IOException, NoConnectionsException, ProcCallException {
 
-        // Used to track changes 
+        // Used to track changes
         final long pid = getPid();
 
         Random r = new Random();
@@ -643,11 +652,11 @@ public abstract class BaseChargingDemo {
         msg("Skipped because transaction was in flight = " + inFlightCount);
 
         reportRunLatencyStats(tpMs, tps);
-        
+
         // Declare victory if we got >= 90% of requested TPS...
         if (tps / (tpMs * 1000) > .9) {
             return true;
-            
+
         }
 
         return false;
@@ -655,7 +664,7 @@ public abstract class BaseChargingDemo {
 
     /**
      * Turn latency stats into a grepable string
-     * 
+     *
      * @param tpMs target transactions per millisecond
      * @param tps observed TPS
      */
