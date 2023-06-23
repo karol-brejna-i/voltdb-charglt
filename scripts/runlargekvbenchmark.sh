@@ -24,6 +24,7 @@
 
 . $HOME/.profile
 
+
 ST=$1
 MX=$2
 INC=$3
@@ -85,7 +86,7 @@ do
 	grep GREPABLE $HOME/logs/${DT}_kv_`uname -n`_${CT}_1.lst 
 
 	FAILED_FILE=/tmp/$$.tmp
-	touch ${FAILD_FILE}
+	touch ${FAILED_FILE}
 	cat $HOME/logs/${DT}_kv_`uname -n`_${CT}_1.lst | grep UNABLE_TO_MEET_REQUESTED_TPS >> ${FAILED_FILE}
 
 

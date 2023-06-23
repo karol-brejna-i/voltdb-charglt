@@ -65,9 +65,10 @@ do
 		[ "$T" -le "$TC" ]
 	do
 
-		echo Starting thread $T at $CT TPS...
-		echo `date` java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 >> $HOME/logs/activity.log
-		java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${CT} $DURATION 60 > $HOME/logs/${DT}_charging_`uname -n`_${CT}_${T}.lst &
+       		EACH_TPS=`expr ${CT} / ${TC}`
+		echo Starting thread $T at $EACH_TPS KTPS...
+		echo `date` java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${EACH_TPS} $DURATION 60 >> $HOME/logs/activity.log
+		java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${EACH_TPS} $DURATION 60 > $HOME/logs/${DT}_charging_`uname -n`_${CT}_${T}.lst &
 		T=`expr $T + 1`
 		sleep 1
 
@@ -77,15 +78,23 @@ do
 
 	wait 
 
-	FAILED=`grep UNABLE_TO_MEET_REQUESTED_TPS $HOME/logs/${DT}_charging_`uname -n`_${CT}_*.lst`
+        grep GREPABLE $HOME/logs/${DT}_charging_`uname -n`_${CT}_1.lst
 
-	if
-		[ "${FAILED}" != "" ]
-	then
-		echo $FAILED
-		exit 1
-	fi
-	
+        FAILED_FILE=/tmp/$$.tmp
+        touch ${FAILED_FILE}
+        cat $HOME/logs/${DT}_charging_`uname -n`_${CT}_1.lst | grep UNABLE_TO_MEET_REQUESTED_TPS >> ${FAILED_FILE}
+
+
+        if
+                [ -s "${FAILED_FILE}" ]
+        then
+                rm ${FAILED_FILE}
+                echo $FAILED
+                exit 1
+        fi
+
+        rm ${FAILED_FILE}
+
 	sleep 15
 
 	CT=`expr $CT + ${INC}`

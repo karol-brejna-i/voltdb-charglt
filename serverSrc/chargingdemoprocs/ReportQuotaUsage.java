@@ -34,7 +34,7 @@ public class ReportQuotaUsage extends VoltProcedure {
 	public static final SQLStmt getUser = new SQLStmt(
 			"SELECT userid FROM user_table WHERE userid = ?;");
 
-	  public static final SQLStmt removeOldestTransaction = new SQLStmt("DELETE "
+    public static final SQLStmt removeOldestTransaction = new SQLStmt("DELETE "
               + "FROM user_recent_transactions "
               + "WHERE userid = ? "
               + "AND txn_time < DATEADD(MINUTE, -1,NOW) "
