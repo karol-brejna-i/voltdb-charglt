@@ -180,14 +180,27 @@ public class SafeHistogramCache {
      */
     public void incCounter(String type) {
 
-        synchronized (theCounterMap) {
-            Long l = theCounterMap.get(type);
-            if (l == null) {
-                l = new Long(0);
-            }
-            theCounterMap.put(type, l.longValue() + 1);
-        }
+        incCounter(type, 1);
 
+    }
+
+    /**
+     * Increment a counter in a Thread Safe way.
+     * 
+     * @param type
+     */
+    public void incCounter(String type, int quantity) {
+
+        if (quantity != 0) {
+
+            synchronized (theCounterMap) {
+                Long l = theCounterMap.get(type);
+                if (l == null) {
+                    l = new Long(0);
+                }
+                theCounterMap.put(type, l.longValue() + quantity);
+            }
+        }
     }
 
     /**
@@ -252,6 +265,22 @@ public class SafeHistogramCache {
 
             }
             h.reportLatency(start, comment);
+            theHistogramMap.put(type, h);
+        }
+
+    }
+
+    public void reportLatency(String type, long start, String comment, int defaultSize, int count) {
+        synchronized (theHistogramMap) {
+            LatencyHistogram h = theHistogramMap.get(type);
+            if (h == null) {
+                h = new LatencyHistogram(type, defaultSize);
+
+            }
+
+            int latency = (int) (System.currentTimeMillis() - start);
+
+            h.report(latency, comment, count);
             theHistogramMap.put(type, h);
         }
 

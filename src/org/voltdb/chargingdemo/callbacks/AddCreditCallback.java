@@ -41,12 +41,7 @@ public class AddCreditCallback implements ProcedureCallback {
 		this.userTransactionState = userTransactionState;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.voltdb.chargingdemo.ReportLatencyCallback#clientCallback(org.voltdb.
-	 * client.ClientResponse)
-	 */
+
 	@Override
 	public void clientCallback(ClientResponse arg0) throws Exception {
 

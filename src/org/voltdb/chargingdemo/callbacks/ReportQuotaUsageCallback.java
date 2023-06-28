@@ -32,7 +32,7 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
         // if the call worked....
         if (arg0.getStatus() == ClientResponse.SUCCESS) {
 
-            shc.reportLatency(BaseChargingDemo.REPORT_QUOTA_USAGE, startMs, BaseChargingDemo.REPORT_QUOTA_USAGE, 250);
+            shc.reportLatency(BaseChargingDemo.REPORT_QUOTA_USAGE, startMs, BaseChargingDemo.REPORT_QUOTA_USAGE, BaseChargingDemo.HISTOGRAM_SIZE_MS);
 
             // if we have an expected response...
             if (arg0.getAppStatus() == ReferenceData.STATUS_ALL_UNITS_ALLOCATED
@@ -87,7 +87,7 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
             // We got some form of Volt error code.
 
             shc.reportLatency(BaseChargingDemo.REPORT_QUOTA_USAGE + "FAIL", startMs,
-                    BaseChargingDemo.REPORT_QUOTA_USAGE + "FAIL", 250);
+                    BaseChargingDemo.REPORT_QUOTA_USAGE + "FAIL", BaseChargingDemo.HISTOGRAM_SIZE_MS);
 
             BaseChargingDemo
                     .msg("ReportUsageCreditCallback user=" + userTransactionState.id + ":" + arg0.getStatusString());

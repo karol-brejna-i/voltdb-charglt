@@ -126,7 +126,7 @@ public class UserKVState implements ProcedureCallback {
                 BaseChargingDemo.msg("UserKVState.clientCallback: got app status of " + arg0.getAppStatusString());
             } else if (userState == STATUS_TRYING_TO_LOCK) {
 
-                shc.reportLatency(BaseChargingDemo.KV_GET, txStartMs, BaseChargingDemo.KV_GET, 250);
+                shc.reportLatency(BaseChargingDemo.KV_GET, txStartMs, BaseChargingDemo.KV_GET, BaseChargingDemo.HISTOGRAM_SIZE_MS);
 
                 if (statusByte == ReferenceData.STATUS_RECORD_HAS_BEEN_SOFTLOCKED) {
 
@@ -145,7 +145,7 @@ public class UserKVState implements ProcedureCallback {
                 }
             } else if (userState == STATUS_UPDATING) {
 
-                shc.reportLatency(BaseChargingDemo.KV_PUT, txStartMs, BaseChargingDemo.KV_PUT, 250);
+                shc.reportLatency(BaseChargingDemo.KV_PUT, txStartMs, BaseChargingDemo.KV_PUT, BaseChargingDemo.HISTOGRAM_SIZE_MS);
 
                 lockId = "";
                 userState = STATUS_UNLOCKED;
