@@ -603,7 +603,7 @@ public abstract class BaseChargingDemo {
                     AddCreditCallback addCreditCallback = new AddCreditCallback(users[randomuser]);
 
                     mainClient.callProcedure(addCreditCallback, "AddCredit", randomuser, extraCredit,
-                            "AddCreditOnShortage_" + pid + "_" + System.currentTimeMillis());
+                            "AddCreditOnShortage_" + pid + "_" + addCreditCount + "_" + System.currentTimeMillis());
 
                 } else {
 
@@ -616,7 +616,7 @@ public abstract class BaseChargingDemo {
 
                     mainClient.callProcedure(reportUsageCallback, "ReportQuotaUsage", randomuser, unitsUsed,
                             unitsWanted, users[randomuser].sessionId,
-                            "ReportQuotaUsage_" + pid + "_" + System.currentTimeMillis());
+                            "ReportQuotaUsage_" + pid + "_" + reportUsageCount + "_" + System.currentTimeMillis());
 
                 }
             }
