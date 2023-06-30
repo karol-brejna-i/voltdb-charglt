@@ -105,6 +105,7 @@ public abstract class BaseChargingDemo {
      * @return
      * @throws Exception
      */
+    @SuppressWarnings("deprecation")
     protected static Client connectVoltDB(String commaDelimitedHostnames) throws Exception {
         Client client = null;
         ClientConfig config = null;
@@ -115,6 +116,7 @@ public abstract class BaseChargingDemo {
             config = new ClientConfig(); // "admin", "idontknow");
             config.setTopologyChangeAware(true);
             config.setReconnectOnConnectionLoss(true);
+            config.setHeavyweight(true);
 
             client = ClientFactory.createClient(config);
 
@@ -544,7 +546,7 @@ public abstract class BaseChargingDemo {
             int globalQueryFreqSeconds, Client mainClient)
             throws InterruptedException, IOException, NoConnectionsException, ProcCallException {
 
-        // Used to track changes
+        // Used to track changes and be unique when we are running multiple threads
         final long pid = getPid();
 
         Random r = new Random();
