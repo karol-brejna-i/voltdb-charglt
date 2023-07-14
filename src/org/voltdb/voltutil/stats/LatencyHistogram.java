@@ -49,7 +49,7 @@ public class LatencyHistogram {
 
     /**
      * Whether we have 'rolled over' - reached Integer.MAX_VALUE for any counter.
-     *
+     * 
      * @see resetLatency
      */
     boolean isRolledOver = false;
@@ -75,13 +75,8 @@ public class LatencyHistogram {
     int maxUsedSize = 0;
 
     /**
-     * Total latency observed.
-     */
-    double latencyTotal = 0;
-
-    /**
      * Create a histogram of up to maxSize
-     *
+     * 
      * @param maxSize
      */
     public LatencyHistogram(int maxSize) {
@@ -90,7 +85,7 @@ public class LatencyHistogram {
 
     /**
      * Create a named histogram of up to maxSize
-     *
+     * 
      * @param maxSize
      */
     public LatencyHistogram(String name, int maxSize) {
@@ -99,7 +94,7 @@ public class LatencyHistogram {
 
     /**
      * Initialize histogram elements
-     *
+     * 
      * @param name
      * @param maxSize
      */
@@ -129,24 +124,23 @@ public class LatencyHistogram {
 
         reports = 0;
         maxUsedSize = 0;
-        latencyTotal = 0;
     }
 
     /**
      * Report a latency measurement. If it's >= maxSize it goes into the last
      * element. Negative values are forced to zero.
-     *
+     * 
      * @param latency
      * @param comment
      */
     public void report(int latency, String comment) {
         report(latency, comment, 1);
     }
-
-    /**
+    
+ /**
      * Report a latency measurement. If it's >= maxSize it goes into the last
      * element. Negative values are forced to zero.
-     *
+     * 
      * @param latency
      * @param comment
      * @param howmany
@@ -154,7 +148,6 @@ public class LatencyHistogram {
     public void report(int latency, String comment, int howMany) {
 
         reports += howMany;
-        latencyTotal = latencyTotal + (latency * howMany);
 
         if (latency < 0) {
             latency = 0;
@@ -163,9 +156,9 @@ public class LatencyHistogram {
         // Does this fit into our histogram?
         if (latency < maxSize) {
 
-            // Can we actually add 1 to the value?
+            // Can we actually add howMany to the value?
             if ((latencyHistogram[latency] + howMany) < Integer.MAX_VALUE) {
-
+                
                 latencyHistogram[latency] += howMany;
 
                 if (maxUsedSize < latency) {
@@ -184,7 +177,10 @@ public class LatencyHistogram {
             if ((latencyHistogram[maxSize - 1] + howMany) < Integer.MAX_VALUE) {
 
                 latencyHistogram[maxSize - 1] += howMany;
-                maxUsedSize = maxSize - 1;
+ 
+                if (maxUsedSize != maxSize - 1) {
+                    maxUsedSize = maxSize - 1;
+                }
 
             } else {
                 isRolledOver = true;
@@ -209,7 +205,7 @@ public class LatencyHistogram {
 
     /**
      * Report latency, assuming startTime is relative to now...
-     *
+     * 
      * @param startTime
      * @param comment
      */
@@ -223,7 +219,7 @@ public class LatencyHistogram {
 
     /**
      * Inspect a specific latency value
-     *
+     * 
      * @param idx
      * @return
      */
@@ -239,7 +235,7 @@ public class LatencyHistogram {
 
     /**
      * Change a specific latency value.
-     *
+     * 
      * @param idx
      * @param value
      */
@@ -247,8 +243,8 @@ public class LatencyHistogram {
 
         int actualIdx = idx;
 
-        if (actualIdx > maxSize - 1) {
-            actualIdx = maxSize - 1;
+        if (actualIdx > maxSize -1) {
+            actualIdx = maxSize -1;
         }
 
         if (actualIdx >= 0) {
@@ -266,7 +262,7 @@ public class LatencyHistogram {
 
     /**
      * Change reports number. This could break things.
-     *
+     * 
      * @param reports
      */
     public void pokeReports(long reports) {
@@ -299,7 +295,7 @@ public class LatencyHistogram {
     /**
      * Assuming this is, in fact latency, return how may milliseconds are needed to
      * 'cover' a given percentage.
-     *
+     * 
      * @param pct
      * @return how many reports are <= pct
      */
@@ -324,11 +320,18 @@ public class LatencyHistogram {
     }
 
     /**
-     * @return total amount of time we have tracked.
+     * @return total amount of time we have tracked. Note that if we have events
+     *         that are higher than maxSize this number will be short.
      */
     public double getLatencyTotal() {
 
-        return latencyTotal;
+        double runningTotal = 0.0;
+
+        for (int i = 0; i < latencyHistogram.length; i++) {
+            runningTotal = runningTotal + (i * latencyHistogram[i]);
+        }
+
+        return runningTotal;
     }
 
     /**
@@ -344,7 +347,14 @@ public class LatencyHistogram {
      *         took.
      */
     public double getEventTotal() {
-        return reports;
+
+        double runningTotal = 0.0;
+
+        for (double element : latencyHistogram) {
+            runningTotal += element;
+        }
+
+        return runningTotal;
     }
 
     /**
@@ -420,7 +430,7 @@ public class LatencyHistogram {
      * <p>
      * Say you have a lifecycle that goes a->b->c->d. You have histograms for a->d
      * and b->c. By subtracting them you can create a->b+c->d
-     *
+     * 
      * @param name       Name for your new histogram
      * @param bigThing   thing that has the bigger values
      * @param smallThing thing that has the smaller values
@@ -455,7 +465,7 @@ public class LatencyHistogram {
 
     /**
      * Update description
-     *
+     * 
      * @param description
      */
     public void setDescription(String description) {
@@ -472,13 +482,6 @@ public class LatencyHistogram {
         }
 
         return false;
-    }
-
-    /**
-     * @param latencyTotal the latencyTotal to set
-     */
-    public void setLatencyTotal(double latencyTotal) {
-        this.latencyTotal = latencyTotal;
     }
 
 }

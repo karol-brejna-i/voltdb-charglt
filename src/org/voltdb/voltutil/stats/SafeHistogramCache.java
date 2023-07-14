@@ -258,15 +258,7 @@ public class SafeHistogramCache {
      */
     public void reportLatency(String type, long start, String comment, int defaultSize) {
 
-        synchronized (theHistogramMap) {
-            LatencyHistogram h = theHistogramMap.get(type);
-            if (h == null) {
-                h = new LatencyHistogram(type, defaultSize);
-
-            }
-            h.reportLatency(start, comment);
-            theHistogramMap.put(type, h);
-        }
+        reportLatency(type, start, comment, defaultSize, 1);
 
     }
 
@@ -275,13 +267,13 @@ public class SafeHistogramCache {
             LatencyHistogram h = theHistogramMap.get(type);
             if (h == null) {
                 h = new LatencyHistogram(type, defaultSize);
-
+                theHistogramMap.put(type, h);
             }
 
             int latency = (int) (System.currentTimeMillis() - start);
 
             h.report(latency, comment, count);
-            theHistogramMap.put(type, h);
+           
         }
 
     }
