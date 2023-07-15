@@ -61,7 +61,7 @@ public class UserKVState implements ProcedureCallback {
     /**
      * When a transaction started, or zero if there isn't one.
      */
-    long txStartMs = 0;
+    long txStartMicros = 0;
 
     /**
      * Last time record was known to be locked by someone else...
@@ -96,7 +96,7 @@ public class UserKVState implements ProcedureCallback {
      */
     public void startTran() {
 
-        txStartMs = System.currentTimeMillis();
+        txStartMicros = System.nanoTime() / 1000;
     }
 
     /**
@@ -104,7 +104,7 @@ public class UserKVState implements ProcedureCallback {
      */
     public boolean isTxInFlight() {
 
-        if (txStartMs > 0) {
+        if (txStartMicros > 0) {
             return true;
         }
 
@@ -126,7 +126,7 @@ public class UserKVState implements ProcedureCallback {
                 BaseChargingDemo.msg("UserKVState.clientCallback: got app status of " + arg0.getAppStatusString());
             } else if (userState == STATUS_TRYING_TO_LOCK) {
 
-                shc.reportLatency(BaseChargingDemo.KV_GET, txStartMs, BaseChargingDemo.KV_GET, BaseChargingDemo.HISTOGRAM_SIZE_MS);
+                shc.reportLatencyMicros(BaseChargingDemo.KV_GET, txStartMicros, BaseChargingDemo.KV_GET, BaseChargingDemo.HISTOGRAM_SIZE_MS,1);
 
                 if (statusByte == ReferenceData.STATUS_RECORD_HAS_BEEN_SOFTLOCKED) {
 
@@ -145,7 +145,7 @@ public class UserKVState implements ProcedureCallback {
                 }
             } else if (userState == STATUS_UPDATING) {
 
-                shc.reportLatency(BaseChargingDemo.KV_PUT, txStartMs, BaseChargingDemo.KV_PUT, BaseChargingDemo.HISTOGRAM_SIZE_MS);
+                shc.reportLatency(BaseChargingDemo.KV_PUT, txStartMicros, BaseChargingDemo.KV_PUT, BaseChargingDemo.HISTOGRAM_SIZE_MS);
 
                 lockId = "";
                 userState = STATUS_UNLOCKED;
@@ -157,7 +157,7 @@ public class UserKVState implements ProcedureCallback {
         }
 
         // End transaction
-        txStartMs = 0;
+        txStartMicros = 0;
     }
 
     /**
@@ -184,7 +184,7 @@ public class UserKVState implements ProcedureCallback {
         builder.append(", userState=");
         builder.append(userState);
         builder.append(", txStartMs=");
-        builder.append(txStartMs);
+        builder.append(txStartMicros);
         builder.append(", lockedBySomeoneElseCount=");
         builder.append(lockedBySomeoneElseCount);
         builder.append("]");

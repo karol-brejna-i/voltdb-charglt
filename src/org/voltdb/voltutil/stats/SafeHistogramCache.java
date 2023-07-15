@@ -249,7 +249,7 @@ public class SafeHistogramCache {
     }
 
     /**
-     * Report a latency, relative to now.
+     * Report a latency, relative to a defined start time.
      * 
      * @param type
      * @param start
@@ -262,6 +262,14 @@ public class SafeHistogramCache {
 
     }
 
+    /**
+     * Report a latency measurement, relative to now. If it's >= maxSize it goes
+     * into the last element. Negative values are forced to zero.
+     * 
+     * @param latency
+     * @param comment
+     * @param howmany
+     */
     public void reportLatency(String type, long start, String comment, int defaultSize, int count) {
         synchronized (theHistogramMap) {
             LatencyHistogram h = theHistogramMap.get(type);
@@ -273,7 +281,57 @@ public class SafeHistogramCache {
             int latency = (int) (System.currentTimeMillis() - start);
 
             h.report(latency, comment, count);
-           
+
+        }
+
+    }
+
+    /**
+     * Report a latency measurement, relative to now, in microseconds. If it's >= maxSize it goes
+     * into the last element. Negative values are forced to zero.
+     * 
+     * @param latency
+     * @param comment
+     * @param howmany
+     */
+    public void reportLatencyMicros(String type, long start, String comment, int defaultSize, int count) {
+        synchronized (theHistogramMap) {
+            LatencyHistogram h = theHistogramMap.get(type);
+            if (h == null) {
+                h = new LatencyHistogram(type, defaultSize);
+                theHistogramMap.put(type, h);
+            }
+
+            int latency = (int) ((System.nanoTime()/1000) - start);
+
+            h.report(latency, comment, count);
+
+        }
+
+    }
+
+
+    
+    /**
+     * Report a latency measurement, relative to now, in nanoseconds. If it's >= maxSize it goes
+     * into the last element. Negative values are forced to zero.
+     * 
+     * @param latency
+     * @param comment
+     * @param howmany
+     */
+    public void reportLatencyNanos(String type, long start, String comment, int defaultSize, int count) {
+        synchronized (theHistogramMap) {
+            LatencyHistogram h = theHistogramMap.get(type);
+            if (h == null) {
+                h = new LatencyHistogram(type, defaultSize);
+                theHistogramMap.put(type, h);
+            }
+
+            int latency = (int) (System.nanoTime() - start);
+
+            h.report(latency, comment, count);
+
         }
 
     }

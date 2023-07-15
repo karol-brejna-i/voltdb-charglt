@@ -74,7 +74,7 @@ import chargingdemoprocs.ReferenceData;
 public abstract class BaseChargingDemo {
 
     public static final long GENERIC_QUERY_USER_ID = 42;
-    public static final int HISTOGRAM_SIZE_MS = 1000;
+    public static final int HISTOGRAM_SIZE_MS = 1000000;
 
     public static final String REPORT_QUOTA_USAGE = "ReportQuotaUsage";
     public static final String KV_PUT = "KV_PUT";

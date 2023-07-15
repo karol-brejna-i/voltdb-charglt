@@ -13,7 +13,7 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
 
     UserTransactionState userTransactionState;
     SafeHistogramCache shc;
-    long startMs = System.currentTimeMillis();
+    long startMicros = System.nanoTime() / 1000;
 
     public ReportQuotaUsageCallback(UserTransactionState userTransactionState, SafeHistogramCache shc) {
         this.userTransactionState = userTransactionState;
@@ -32,7 +32,7 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
         // if the call worked....
         if (arg0.getStatus() == ClientResponse.SUCCESS) {
 
-            shc.reportLatency(BaseChargingDemo.REPORT_QUOTA_USAGE, startMs, BaseChargingDemo.REPORT_QUOTA_USAGE, BaseChargingDemo.HISTOGRAM_SIZE_MS);
+            shc.reportLatencyMicros(BaseChargingDemo.REPORT_QUOTA_USAGE, startMicros, BaseChargingDemo.REPORT_QUOTA_USAGE, BaseChargingDemo.HISTOGRAM_SIZE_MS,1);
 
             // if we have an expected response...
             if (arg0.getAppStatus() == ReferenceData.STATUS_ALL_UNITS_ALLOCATED
@@ -86,7 +86,7 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
         } else {
             // We got some form of Volt error code.
 
-            shc.reportLatency(BaseChargingDemo.REPORT_QUOTA_USAGE + "FAIL", startMs,
+            shc.reportLatency(BaseChargingDemo.REPORT_QUOTA_USAGE + "FAIL", startMicros,
                     BaseChargingDemo.REPORT_QUOTA_USAGE + "FAIL", BaseChargingDemo.HISTOGRAM_SIZE_MS);
 
             BaseChargingDemo
