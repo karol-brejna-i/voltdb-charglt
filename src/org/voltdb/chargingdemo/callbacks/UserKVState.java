@@ -1,4 +1,6 @@
-package org.voltdb.chargingdemo;
+package org.voltdb.chargingdemo.callbacks;
+
+import org.voltdb.chargingdemo.BaseChargingDemo;
 
 /* This file is part of VoltDB.
  * Copyright (C) 2008-2022 VoltDB Inc.
@@ -36,11 +38,11 @@ import chargingdemoprocs.ReferenceData;
  */
 public class UserKVState implements ProcedureCallback {
 
-    static final byte STATUS_UNLOCKED = 0;
-    static final byte STATUS_TRYING_TO_LOCK = 1;
-    static final byte STATUS_LOCKED = 2;
-    static final byte STATUS_UPDATING = 3;
-    static final byte STATUS_LOCKED_BY_SOMEONE_ELSE = 4;
+    public static final byte STATUS_UNLOCKED = 0;
+    public static final byte STATUS_TRYING_TO_LOCK = 1;
+    public static final byte STATUS_LOCKED = 2;
+    public static final byte STATUS_UPDATING = 3;
+    public static final byte STATUS_LOCKED_BY_SOMEONE_ELSE = 4;
 
     /**
      * Unique ID given to us by VoltDB that we use to prove that we are the owner of
@@ -126,7 +128,8 @@ public class UserKVState implements ProcedureCallback {
                 BaseChargingDemo.msg("UserKVState.clientCallback: got app status of " + arg0.getAppStatusString());
             } else if (userState == STATUS_TRYING_TO_LOCK) {
 
-                shc.reportLatencyMicros(BaseChargingDemo.KV_GET, txStartMicros, BaseChargingDemo.KV_GET, BaseChargingDemo.HISTOGRAM_SIZE_MS,1);
+                shc.reportLatencyMicros(BaseChargingDemo.KV_GET, txStartMicros, BaseChargingDemo.KV_GET,
+                        BaseChargingDemo.HISTOGRAM_SIZE_MS, 1);
 
                 if (statusByte == ReferenceData.STATUS_RECORD_HAS_BEEN_SOFTLOCKED) {
 
@@ -145,7 +148,8 @@ public class UserKVState implements ProcedureCallback {
                 }
             } else if (userState == STATUS_UPDATING) {
 
-                shc.reportLatency(BaseChargingDemo.KV_PUT, txStartMicros, BaseChargingDemo.KV_PUT, BaseChargingDemo.HISTOGRAM_SIZE_MS);
+                shc.reportLatencyMicros(BaseChargingDemo.KV_PUT, txStartMicros, BaseChargingDemo.KV_PUT,
+                        BaseChargingDemo.HISTOGRAM_SIZE_MS, 1);
 
                 lockId = "";
                 userState = STATUS_UNLOCKED;

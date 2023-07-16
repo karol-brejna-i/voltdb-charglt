@@ -55,6 +55,7 @@ import java.util.Random;
 import org.voltdb.chargingdemo.callbacks.AddCreditCallback;
 import org.voltdb.chargingdemo.callbacks.ComplainOnErrorCallback;
 import org.voltdb.chargingdemo.callbacks.ReportQuotaUsageCallback;
+import org.voltdb.chargingdemo.callbacks.UserKVState;
 import org.voltdb.client.Client;
 import org.voltdb.client.ClientConfig;
 import org.voltdb.client.ClientFactory;
@@ -427,11 +428,11 @@ public abstract class BaseChargingDemo {
                    // Instead of sending entire JSON object across wire ask app to update loyalty number. For
                    // large values stored as JSON this can have a dramatic effect on network bandwidth
                    mainClient.callProcedure(userState[oursession], "UpdateLockedUser", oursession,
-                           userState[oursession].lockId, getNewLoyaltyCardNumber(r), ExtraUserData.NEW_LOYALTY_NUMBER);
+                           userState[oursession].getLockId(), getNewLoyaltyCardNumber(r), ExtraUserData.NEW_LOYALTY_NUMBER);
                } else {
                    fullUpdate++;
                    mainClient.callProcedure(userState[oursession], "UpdateLockedUser", oursession,
-                           userState[oursession].lockId, getExtraUserDataAsJsonString(jsonsize, gson, r), null);
+                           userState[oursession].getLockId(), getExtraUserDataAsJsonString(jsonsize, gson, r), null);
                }
 
            }
