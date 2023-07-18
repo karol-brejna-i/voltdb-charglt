@@ -688,6 +688,8 @@ public abstract class BaseChargingDemo {
         SafeHistogramCache.getProcPercentiles(shc, oneLineSummary, KV_GET);
 
         msg(oneLineSummary.toString());
+        
+        msg(shc.toString());
     }
 
     /**
