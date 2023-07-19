@@ -136,8 +136,8 @@ public class LatencyHistogram {
     public void report(int latency, String comment) {
         report(latency, comment, 1);
     }
-    
- /**
+
+    /**
      * Report a latency measurement. If it's >= maxSize it goes into the last
      * element. Negative values are forced to zero.
      * 
@@ -158,7 +158,7 @@ public class LatencyHistogram {
 
             // Can we actually add howMany to the value?
             if ((latencyHistogram[latency] + howMany) < Integer.MAX_VALUE) {
-                
+
                 latencyHistogram[latency] += howMany;
 
                 if (maxUsedSize < latency) {
@@ -177,7 +177,7 @@ public class LatencyHistogram {
             if ((latencyHistogram[maxSize - 1] + howMany) < Integer.MAX_VALUE) {
 
                 latencyHistogram[maxSize - 1] += howMany;
- 
+
                 if (maxUsedSize != maxSize - 1) {
                     maxUsedSize = maxSize - 1;
                 }
@@ -243,8 +243,8 @@ public class LatencyHistogram {
 
         int actualIdx = idx;
 
-        if (actualIdx > maxSize -1) {
-            actualIdx = maxSize -1;
+        if (actualIdx > maxSize - 1) {
+            actualIdx = maxSize - 1;
         }
 
         if (actualIdx >= 0) {
@@ -301,7 +301,7 @@ public class LatencyHistogram {
      */
     public int getLatencyPct(double pct) {
 
-        final double target = getLatencyTotal() * (pct / 100);
+        final double target = getEventTotal() * (pct / 100);
         double runningTotal = latencyHistogram[0];
         int matchValue = 0;
 
@@ -312,7 +312,7 @@ public class LatencyHistogram {
             }
 
             matchValue = i;
-            runningTotal = runningTotal + (i * latencyHistogram[i]);
+            runningTotal = runningTotal + latencyHistogram[i];
 
         }
 

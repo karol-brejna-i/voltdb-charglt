@@ -23,7 +23,6 @@ package org.voltdb.chargingdemo.callbacks;
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 import org.voltdb.chargingdemo.BaseChargingDemo;
 
 /* This file is part of VoltDB.
@@ -49,13 +48,12 @@ import org.voltdb.chargingdemo.BaseChargingDemo;
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 import org.voltdb.client.ClientResponse;
 import org.voltdb.client.ProcedureCallback;
 
 /**
- * Simple callback that complains if something went badly
- * wrong.
+ * Simple callback that complains if something went badly wrong.
+ * 
  * @author drolfe
  *
  */

@@ -287,8 +287,8 @@ public class SafeHistogramCache {
     }
 
     /**
-     * Report a latency measurement, relative to now, in microseconds. If it's >= maxSize it goes
-     * into the last element. Negative values are forced to zero.
+     * Report a latency measurement, relative to now, in microseconds. If it's >=
+     * maxSize it goes into the last element. Negative values are forced to zero.
      * 
      * @param latency
      * @param comment
@@ -302,7 +302,7 @@ public class SafeHistogramCache {
                 theHistogramMap.put(type, h);
             }
 
-            int latency = (int) ((System.nanoTime()/1000) - start);
+            int latency = (int) ((System.nanoTime() / 1000) - start);
 
             h.report(latency, comment, count);
 
@@ -310,11 +310,9 @@ public class SafeHistogramCache {
 
     }
 
-
-    
     /**
-     * Report a latency measurement, relative to now, in nanoseconds. If it's >= maxSize it goes
-     * into the last element. Negative values are forced to zero.
+     * Report a latency measurement, relative to now, in nanoseconds. If it's >=
+     * maxSize it goes into the last element. Negative values are forced to zero.
      * 
      * @param latency
      * @param comment

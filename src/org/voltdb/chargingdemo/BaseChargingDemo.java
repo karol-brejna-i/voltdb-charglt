@@ -327,166 +327,169 @@ public abstract class BaseChargingDemo {
     }
 
     /**
-    *
-    * Run a key value store benchmark for userCount users at tpMs transactions per
-    * millisecond and with deltaProportion records sending the entire record.
-    *
-    * @param userCount
-    * @param tpMs
-    * @param durationSeconds
-    * @param globalQueryFreqSeconds
-    * @param jsonsize
-    * @param mainClient
-    * @param deltaProportion
-    * @return true if >=90% of requested throughput was achieved.
-    * @throws InterruptedException
-    * @throws IOException
-    * @throws NoConnectionsException
-    * @throws ProcCallException
-    */
-   protected static boolean runKVBenchmark(int userCount, int tpMs, int durationSeconds, int globalQueryFreqSeconds,
-           int jsonsize, Client mainClient, int deltaProportion)
-           throws InterruptedException, IOException, NoConnectionsException, ProcCallException {
+     *
+     * Run a key value store benchmark for userCount users at tpMs transactions per
+     * millisecond and with deltaProportion records sending the entire record.
+     *
+     * @param userCount
+     * @param tpMs
+     * @param durationSeconds
+     * @param globalQueryFreqSeconds
+     * @param jsonsize
+     * @param mainClient
+     * @param deltaProportion
+     * @return true if >=90% of requested throughput was achieved.
+     * @throws InterruptedException
+     * @throws IOException
+     * @throws NoConnectionsException
+     * @throws ProcCallException
+     */
+    protected static boolean runKVBenchmark(int userCount, int tpMs, int durationSeconds, int globalQueryFreqSeconds,
+            int jsonsize, Client mainClient, int deltaProportion)
+            throws InterruptedException, IOException, NoConnectionsException, ProcCallException {
 
-       long lastGlobalQueryMs = 0;
+        long lastGlobalQueryMs = 0;
 
-       UserKVState[] userState = new UserKVState[userCount];
+        UserKVState[] userState = new UserKVState[userCount];
 
-       Random r = new Random();
+        Random r = new Random();
 
-       Gson gson = new Gson();
+        Gson gson = new Gson();
 
-       for (int i = 0; i < userCount; i++) {
-           userState[i] = new UserKVState(i,shc);
-       }
+        for (int i = 0; i < userCount; i++) {
+            userState[i] = new UserKVState(i, shc);
+        }
 
-       final long startMsRun = System.currentTimeMillis();
-       long currentMs = System.currentTimeMillis();
-       int tpThisMs = 0;
+        final long startMsRun = System.currentTimeMillis();
+        long currentMs = System.currentTimeMillis();
+        int tpThisMs = 0;
 
-       final long endtimeMs = System.currentTimeMillis() + (durationSeconds * 1000);
+        final long endtimeMs = System.currentTimeMillis() + (durationSeconds * 1000);
 
-       // How many transactions we've done...
-       int tranCount = 0;
-       int inFlightCount = 0;
-       int lockCount = 0;
-       int contestedLockCount= 0;
-       int fullUpdate = 0;
-       int deltaUpdate = 0;
+        // How many transactions we've done...
+        int tranCount = 0;
+        int inFlightCount = 0;
+        int lockCount = 0;
+        int contestedLockCount = 0;
+        int fullUpdate = 0;
+        int deltaUpdate = 0;
 
-       while (endtimeMs > System.currentTimeMillis()) {
+        while (endtimeMs > System.currentTimeMillis()) {
 
-           if (tpThisMs++ > tpMs) {
+            if (tpThisMs++ > tpMs) {
 
-               while (currentMs == System.currentTimeMillis()) {
-                   Thread.sleep(0, 50000);
+                while (currentMs == System.currentTimeMillis()) {
+                    Thread.sleep(0, 50000);
 
-               }
+                }
 
-               currentMs = System.currentTimeMillis();
-               tpThisMs = 0;
-           }
+                currentMs = System.currentTimeMillis();
+                tpThisMs = 0;
+            }
 
-           // Find session to do a transaction for...
-           int oursession = r.nextInt(userCount);
+            // Find session to do a transaction for...
+            int oursession = r.nextInt(userCount);
 
-           // See if session already has an active transaction and avoid
-           // it if it does.
+            // See if session already has an active transaction and avoid
+            // it if it does.
 
-           if (userState[oursession].isTxInFlight()) {
+            if (userState[oursession].isTxInFlight()) {
 
-               inFlightCount++;
+                inFlightCount++;
 
-           } else if (userState[oursession].getUserStatus() == UserKVState.STATUS_LOCKED_BY_SOMEONE_ELSE) {
+            } else if (userState[oursession].getUserStatus() == UserKVState.STATUS_LOCKED_BY_SOMEONE_ELSE) {
 
-               if (userState[oursession].getOtherLockTimeMs() + ReferenceData.LOCK_TIMEOUT_MS < System.currentTimeMillis()) {
+                if (userState[oursession].getOtherLockTimeMs() + ReferenceData.LOCK_TIMEOUT_MS < System
+                        .currentTimeMillis()) {
 
-                   userState[oursession].startTran();
-                   userState[oursession].setStatus(UserKVState.STATUS_TRYING_TO_LOCK);
-                   mainClient.callProcedure(userState[oursession], "GetAndLockUser", oursession);
-                   lockCount++;
+                    userState[oursession].startTran();
+                    userState[oursession].setStatus(UserKVState.STATUS_TRYING_TO_LOCK);
+                    mainClient.callProcedure(userState[oursession], "GetAndLockUser", oursession);
+                    lockCount++;
 
-               }else {
-                 contestedLockCount++;
-               }
+                } else {
+                    contestedLockCount++;
+                }
 
+            } else if (userState[oursession].getUserStatus() == UserKVState.STATUS_UNLOCKED) {
 
-           }  else if (userState[oursession].getUserStatus() == UserKVState.STATUS_UNLOCKED) {
+                userState[oursession].startTran();
+                userState[oursession].setStatus(UserKVState.STATUS_TRYING_TO_LOCK);
+                mainClient.callProcedure(userState[oursession], "GetAndLockUser", oursession);
+                lockCount++;
 
-               userState[oursession].startTran();
-               userState[oursession].setStatus(UserKVState.STATUS_TRYING_TO_LOCK);
-               mainClient.callProcedure(userState[oursession], "GetAndLockUser", oursession);
-               lockCount++;
+            } else if (userState[oursession].getUserStatus() == UserKVState.STATUS_LOCKED) {
 
-           } else if (userState[oursession].getUserStatus() == UserKVState.STATUS_LOCKED) {
+                userState[oursession].startTran();
+                userState[oursession].setStatus(UserKVState.STATUS_UPDATING);
 
-               userState[oursession].startTran();
-               userState[oursession].setStatus(UserKVState.STATUS_UPDATING);
+                if (deltaProportion > r.nextInt(101)) {
+                    deltaUpdate++;
+                    // Instead of sending entire JSON object across wire ask app to update loyalty
+                    // number. For
+                    // large values stored as JSON this can have a dramatic effect on network
+                    // bandwidth
+                    mainClient.callProcedure(userState[oursession], "UpdateLockedUser", oursession,
+                            userState[oursession].getLockId(), getNewLoyaltyCardNumber(r),
+                            ExtraUserData.NEW_LOYALTY_NUMBER);
+                } else {
+                    fullUpdate++;
+                    mainClient.callProcedure(userState[oursession], "UpdateLockedUser", oursession,
+                            userState[oursession].getLockId(), getExtraUserDataAsJsonString(jsonsize, gson, r), null);
+                }
 
-               if (deltaProportion > r.nextInt(101)) {
-                   deltaUpdate++;
-                   // Instead of sending entire JSON object across wire ask app to update loyalty number. For
-                   // large values stored as JSON this can have a dramatic effect on network bandwidth
-                   mainClient.callProcedure(userState[oursession], "UpdateLockedUser", oursession,
-                           userState[oursession].getLockId(), getNewLoyaltyCardNumber(r), ExtraUserData.NEW_LOYALTY_NUMBER);
-               } else {
-                   fullUpdate++;
-                   mainClient.callProcedure(userState[oursession], "UpdateLockedUser", oursession,
-                           userState[oursession].getLockId(), getExtraUserDataAsJsonString(jsonsize, gson, r), null);
-               }
+            }
 
-           }
+            tranCount++;
 
-           tranCount++;
+            if (tranCount % 100000 == 1) {
+                msg("Transaction " + tranCount);
+            }
 
-           if (tranCount % 100000 == 1) {
-               msg("Transaction " + tranCount);
-           }
+        }
 
-       }
+        // See if we need to do global queries...
+        if (lastGlobalQueryMs + (globalQueryFreqSeconds * 1000) < System.currentTimeMillis()) {
+            lastGlobalQueryMs = System.currentTimeMillis();
 
-       // See if we need to do global queries...
-       if (lastGlobalQueryMs + (globalQueryFreqSeconds * 1000) < System.currentTimeMillis()) {
-           lastGlobalQueryMs = System.currentTimeMillis();
+            queryUserAndStats(mainClient, GENERIC_QUERY_USER_ID);
 
-           queryUserAndStats(mainClient, GENERIC_QUERY_USER_ID);
+        }
 
-       }
+        msg(tranCount + " transactions done...");
+        msg("All entries in queue, waiting for it to drain...");
+        mainClient.drain();
+        msg("Queue drained...");
 
-       msg(tranCount + " transactions done...");
-       msg("All entries in queue, waiting for it to drain...");
-       mainClient.drain();
-       msg("Queue drained...");
+        long transactionsPerMs = tranCount / (System.currentTimeMillis() - startMsRun);
+        msg("processed " + transactionsPerMs + " entries per ms while doing transactions...");
 
-       long transactionsPerMs = tranCount / (System.currentTimeMillis() - startMsRun);
-       msg("processed " + transactionsPerMs + " entries per ms while doing transactions...");
+        long lockFailCount = 0;
+        for (int i = 0; i < userCount; i++) {
+            lockFailCount += userState[i].getLockedBySomeoneElseCount();
+        }
 
-       long lockFailCount = 0;
-       for (int i = 0; i < userCount; i++) {
-           lockFailCount += userState[i].getLockedBySomeoneElseCount();
-       }
+        msg(inFlightCount + " events where a tx was in flight were observed");
+        msg(lockCount + " lock attempts");
+        msg(contestedLockCount + " contested lock attempts");
+        msg(lockFailCount + " lock attempt failures");
+        msg(fullUpdate + " full updates");
+        msg(deltaUpdate + " delta updates");
 
-       msg(inFlightCount + " events where a tx was in flight were observed");
-       msg(lockCount + " lock attempts");
-       msg(contestedLockCount + " contested lock attempts");
-       msg(lockFailCount + " lock attempt failures");
-       msg(fullUpdate + " full updates");
-       msg(deltaUpdate + " delta updates");
+        double tps = tranCount;
+        tps = tps / (System.currentTimeMillis() - startMsRun);
+        tps = (long) tps * 1000;
 
-       double tps = tranCount;
-       tps = tps / (System.currentTimeMillis() - startMsRun);
-       tps = (long)tps * 1000;
+        reportRunLatencyStats(tpMs, tps);
 
-       reportRunLatencyStats(tpMs, tps);
+        // Declare victory if we got >= 90% of requested TPS...
+        if (tps / (tpMs * 1000) > .9) {
+            return true;
 
-       // Declare victory if we got >= 90% of requested TPS...
-       if (tps / (tpMs * 1000) > .9) {
-           return true;
+        }
 
-       }
-
-       return false;
-   }
+        return false;
+    }
 
     /**
      * Convenience method to remove unneeded records storing old allotments of
@@ -612,7 +615,7 @@ public abstract class BaseChargingDemo {
 
                     reportUsageCount++;
 
-                    ReportQuotaUsageCallback reportUsageCallback = new ReportQuotaUsageCallback(users[randomuser],shc);
+                    ReportQuotaUsageCallback reportUsageCallback = new ReportQuotaUsageCallback(users[randomuser], shc);
 
                     long unitsUsed = (int) (users[randomuser].currentlyReserved * 0.9);
                     long unitsWanted = r.nextInt(100);
@@ -647,7 +650,7 @@ public abstract class BaseChargingDemo {
 
         double tps = tranCount;
         tps = tps / elapsedTimeMs;
-        tps = (long)tps * 1000;
+        tps = (long) tps * 1000;
 
         msg("TPS = " + tps);
 
@@ -670,7 +673,7 @@ public abstract class BaseChargingDemo {
      * Turn latency stats into a grepable string
      *
      * @param tpMs target transactions per millisecond
-     * @param tps observed TPS
+     * @param tps  observed TPS
      */
     private static void reportRunLatencyStats(int tpMs, double tps) {
         StringBuffer oneLineSummary = new StringBuffer("GREPABLE SUMMARY:");
@@ -688,18 +691,18 @@ public abstract class BaseChargingDemo {
         SafeHistogramCache.getProcPercentiles(shc, oneLineSummary, KV_GET);
 
         msg(oneLineSummary.toString());
-        
+
         msg(shc.toString());
     }
 
     /**
      * Get Linux process ID - used for pseudo unique ids
+     * 
      * @return Linux process ID
      */
     private static long getPid() {
         return ProcessHandle.current().pid();
     }
-
 
     /**
      * Return a loyalty card number

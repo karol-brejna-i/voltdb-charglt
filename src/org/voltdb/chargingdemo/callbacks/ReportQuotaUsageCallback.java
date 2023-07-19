@@ -1,5 +1,8 @@
 package org.voltdb.chargingdemo.callbacks;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.voltdb.VoltTable;
 import org.voltdb.chargingdemo.BaseChargingDemo;
 import org.voltdb.chargingdemo.UserTransactionState;
@@ -13,7 +16,7 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
 
     UserTransactionState userTransactionState;
     SafeHistogramCache shc;
-    long startMicros = System.nanoTime() / 1000;
+    final long startNanos = System.nanoTime();
 
     public ReportQuotaUsageCallback(UserTransactionState userTransactionState, SafeHistogramCache shc) {
         this.userTransactionState = userTransactionState;
@@ -32,7 +35,15 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
         // if the call worked....
         if (arg0.getStatus() == ClientResponse.SUCCESS) {
 
-            shc.reportLatencyMicros(BaseChargingDemo.REPORT_QUOTA_USAGE, startMicros, BaseChargingDemo.REPORT_QUOTA_USAGE, BaseChargingDemo.HISTOGRAM_SIZE_MS,1);
+            final long endNanos = System.nanoTime();
+
+            final int thisLatency = (int) ((endNanos - startNanos) / 1000);
+
+            SimpleDateFormat sdfDate = new SimpleDateFormat(" HH:mm:ss");
+            Date now = new Date();
+            String strDate = sdfDate.format(now);
+
+            shc.report(BaseChargingDemo.REPORT_QUOTA_USAGE, thisLatency, strDate, BaseChargingDemo.HISTOGRAM_SIZE_MS);
 
             // if we have an expected response...
             if (arg0.getAppStatus() == ReferenceData.STATUS_ALL_UNITS_ALLOCATED
@@ -86,7 +97,7 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
         } else {
             // We got some form of Volt error code.
 
-            shc.reportLatency(BaseChargingDemo.REPORT_QUOTA_USAGE + "FAIL", startMicros,
+            shc.reportLatency(BaseChargingDemo.REPORT_QUOTA_USAGE + "FAIL", startNanos,
                     BaseChargingDemo.REPORT_QUOTA_USAGE + "FAIL", BaseChargingDemo.HISTOGRAM_SIZE_MS);
 
             BaseChargingDemo

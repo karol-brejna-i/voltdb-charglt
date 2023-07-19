@@ -48,50 +48,51 @@ public class GetAndLockUser extends VoltProcedure {
 
     // @formatter:on
 
-  /**
-   * Gets all the information we have about a user, while adding an expiring timestamp
-   * and an internally generated lock id that is used to do updates.
-   *
-   * @param userId
-   * @return lockid (accessibe via ClientStatus.getAppStatusString())
-   * @throws VoltAbortException
-   */
-  public VoltTable[] run(long userId) throws VoltAbortException {
+    /**
+     * Gets all the information we have about a user, while adding an expiring
+     * timestamp and an internally generated lock id that is used to do updates.
+     *
+     * @param userId
+     * @return lockid (accessibe via ClientStatus.getAppStatusString())
+     * @throws VoltAbortException
+     */
+    public VoltTable[] run(long userId) throws VoltAbortException {
 
-    voltQueueSQL(getUser, userId);
+        voltQueueSQL(getUser, userId);
 
-    VoltTable[] userRecord = voltExecuteSQL();
+        VoltTable[] userRecord = voltExecuteSQL();
 
-    // Sanity check: Does this user exist?
-    if (!userRecord[0].advanceRow()) {
-      throw new VoltAbortException("User " + userId + " does not exist");
+        // Sanity check: Does this user exist?
+        if (!userRecord[0].advanceRow()) {
+            throw new VoltAbortException("User " + userId + " does not exist");
+        }
+
+        final TimestampType currentTimestamp = new TimestampType(this.getTransactionTime());
+        final TimestampType lockingSessionExpiryTimestamp = userRecord[0]
+                .getTimestampAsTimestamp("user_softlock_expiry");
+
+        // If somebody has locked this session and the lock hasn't expired complain...
+        if (lockingSessionExpiryTimestamp != null && lockingSessionExpiryTimestamp.compareTo(currentTimestamp) > 0) {
+
+            final long lockingSessionId = userRecord[0].getLong("user_softlock_sessionid");
+            this.setAppStatusCode(ReferenceData.STATUS_RECORD_ALREADY_SOFTLOCKED);
+            this.setAppStatusString("User " + userId + " has already been locked by session " + lockingSessionId);
+
+        } else {
+            // 'Lock' record
+            final long lockingSessionId = getUniqueId();
+            this.setAppStatusCode(ReferenceData.STATUS_RECORD_HAS_BEEN_SOFTLOCKED);
+
+            // Note how we pass the lock ID back...
+            this.setAppStatusString("" + lockingSessionId);
+            voltQueueSQL(upsertUserLock, getUniqueId(), ReferenceData.LOCK_TIMEOUT_MS, currentTimestamp, userId);
+        }
+
+        voltQueueSQL(getUser, userId);
+        voltQueueSQL(getAllTxn, userId);
+        voltQueueSQL(getUserUsage, userId);
+
+        return voltExecuteSQL(true);
+
     }
-
-    final TimestampType currentTimestamp = new TimestampType(this.getTransactionTime());
-    final TimestampType lockingSessionExpiryTimestamp = userRecord[0].getTimestampAsTimestamp("user_softlock_expiry");
-
-    // If somebody has locked this session and the lock hasn't expired complain...
-    if (lockingSessionExpiryTimestamp != null && lockingSessionExpiryTimestamp.compareTo(currentTimestamp) > 0) {
-
-      final long lockingSessionId = userRecord[0].getLong("user_softlock_sessionid");
-      this.setAppStatusCode(ReferenceData.STATUS_RECORD_ALREADY_SOFTLOCKED);
-      this.setAppStatusString("User " + userId + " has already been locked by session " + lockingSessionId);
-
-    } else {
-      // 'Lock' record
-      final long lockingSessionId = getUniqueId();
-      this.setAppStatusCode(ReferenceData.STATUS_RECORD_HAS_BEEN_SOFTLOCKED);
-
-      //Note how we pass the lock ID back...
-      this.setAppStatusString("" + lockingSessionId);
-      voltQueueSQL(upsertUserLock, getUniqueId(),  ReferenceData.LOCK_TIMEOUT_MS, currentTimestamp, userId);
-    }
-
-    voltQueueSQL(getUser, userId);
-    voltQueueSQL(getAllTxn, userId);
-    voltQueueSQL(getUserUsage, userId);
-
-    return voltExecuteSQL(true);
-
-  }
 }

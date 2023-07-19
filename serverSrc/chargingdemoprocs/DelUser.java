@@ -29,7 +29,7 @@ import org.voltdb.VoltTable;
 
 public class DelUser extends VoltProcedure {
 
-	// @formatter:off
+    // @formatter:off
 
 	public static final SQLStmt delUser = new SQLStmt("DELETE FROM user_table WHERE userid = ?;");
 	public static final SQLStmt delUserUsage = new SQLStmt("DELETE FROM user_usage_table WHERE userid = ?;");
@@ -38,20 +38,20 @@ public class DelUser extends VoltProcedure {
 
 	// @formatter:on
 
-	/**
-	 * Deletes all information we have about a user.
-	 *
-	 * @param userId
-	 * @return
-	 * @throws VoltAbortException
-	 */
-	public VoltTable[] run(long userId) throws VoltAbortException {
+    /**
+     * Deletes all information we have about a user.
+     *
+     * @param userId
+     * @return
+     * @throws VoltAbortException
+     */
+    public VoltTable[] run(long userId) throws VoltAbortException {
 
-		voltQueueSQL(delUser, userId);
-		voltQueueSQL(delUserUsage, userId);
-		voltQueueSQL(delBalance, userId);
-		voltQueueSQL(delTxns, userId);
+        voltQueueSQL(delUser, userId);
+        voltQueueSQL(delUserUsage, userId);
+        voltQueueSQL(delBalance, userId);
+        voltQueueSQL(delTxns, userId);
 
-		return voltExecuteSQL(true);
-	}
+        return voltExecuteSQL(true);
+    }
 }

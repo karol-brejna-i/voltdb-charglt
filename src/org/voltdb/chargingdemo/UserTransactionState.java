@@ -55,12 +55,11 @@ public class UserTransactionState {
      */
     public long currentlyReserved = 0;
 
-
     /**
      * Create a record for a user.
      *
      * @param id
-     * @param spendableBalance  Long.MAX_VALUE means we don't know...
+     * @param spendableBalance Long.MAX_VALUE means we don't know...
      */
     public UserTransactionState(int id, long spendableBalance) {
         this.id = id;

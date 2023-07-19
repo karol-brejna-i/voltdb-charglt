@@ -30,7 +30,7 @@ import org.voltdb.types.TimestampType;
 
 public class UpsertUser extends VoltProcedure {
 
-	// @formatter:off
+    // @formatter:off
 
 	public static final SQLStmt getUser = new SQLStmt("SELECT userid FROM user_table WHERE userid = ?;");
 
@@ -49,48 +49,47 @@ public class UpsertUser extends VoltProcedure {
 
 	// @formatter:on
 
+    public VoltTable[] run(long userId, long addBalance, String json, String purpose, TimestampType lastSeen,
+            String txnId) throws VoltAbortException {
 
-	public VoltTable[] run(long userId, long addBalance, String json, String purpose, TimestampType lastSeen,
-			String txnId) throws VoltAbortException {
+        long currentBalance = 0;
 
-		long currentBalance = 0;
+        voltQueueSQL(getUser, userId);
+        voltQueueSQL(getTxn, userId, txnId);
 
-		voltQueueSQL(getUser, userId);
-		voltQueueSQL(getTxn, userId, txnId);
+        VoltTable[] results = voltExecuteSQL();
 
-		VoltTable[] results = voltExecuteSQL();
+        if (results[1].advanceRow()) {
 
-		if (results[1].advanceRow()) {
+            this.setAppStatusCode(ReferenceData.STATUS_TXN_ALREADY_HAPPENED);
+            this.setAppStatusString(
+                    "Event already happened at " + results[1].getTimestampAsTimestamp("txn_time").toString());
 
-			this.setAppStatusCode(ReferenceData.STATUS_TXN_ALREADY_HAPPENED);
-			this.setAppStatusString(
-					"Event already happened at " + results[1].getTimestampAsTimestamp("txn_time").toString());
+        } else {
 
-		} else {
+            voltQueueSQL(addTxn, userId, txnId, 0, addBalance, "Upsert user");
 
-			voltQueueSQL(addTxn, userId, txnId, 0, addBalance, "Upsert user");
+            if (!results[0].advanceRow()) {
 
-			if (!results[0].advanceRow()) {
+                final String status = "Created user " + userId + " with opening credit of " + addBalance;
+                voltQueueSQL(insertUser, userId, json, lastSeen);
+                voltQueueSQL(reportAddcreditEvent, userId, addBalance, txnId, "user created");
+                this.setAppStatusCode(ReferenceData.STATUS_OK);
+                this.setAppStatusString(status);
 
-				final String status = "Created user " + userId + " with opening credit of " + addBalance;
-				voltQueueSQL(insertUser, userId, json, lastSeen);
-				voltQueueSQL(reportAddcreditEvent, userId, addBalance, txnId, "user created");
-				this.setAppStatusCode(ReferenceData.STATUS_OK);
-				this.setAppStatusString(status);
+            } else {
 
-			} else {
+                final String status = "Updated user " + userId + " - added credit of " + addBalance + "; balance now "
+                        + currentBalance;
 
-				final String status = "Updated user " + userId + " - added credit of " + addBalance + "; balance now "
-						+ currentBalance;
+                voltQueueSQL(reportAddcreditEvent, userId, addBalance, txnId, "user upserted");
+                this.setAppStatusCode(ReferenceData.STATUS_OK);
+                this.setAppStatusString(status);
 
-				voltQueueSQL(reportAddcreditEvent, userId, addBalance, txnId, "user upserted");
-				this.setAppStatusCode(ReferenceData.STATUS_OK);
-				this.setAppStatusString(status);
+            }
 
-			}
+        }
 
-		}
-
-		return voltExecuteSQL(true);
-	}
+        return voltExecuteSQL(true);
+    }
 }

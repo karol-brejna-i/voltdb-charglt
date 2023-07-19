@@ -64,12 +64,16 @@ public class ReportQuotaUsage extends VoltProcedure {
 	// @formatter:on
 
     /**
-     * @param userId - Identifies a user
-     * @param unitsUsed - How many units of credit were used. Initially this will be zero, as we start by reserving credit.
-     * @param unitsWanted - How many units of credit the user is looking for. Some or all of this may be granted.
-     * @param inputSessionId - a Unique ID for a session. A  negative number means a new session.
-     * @param txnId - A unique ID for the network call. This is needed so we can tell if a transaction completed,
-     *                but didn't get back to the client.
+     * @param userId         - Identifies a user
+     * @param unitsUsed      - How many units of credit were used. Initially this
+     *                       will be zero, as we start by reserving credit.
+     * @param unitsWanted    - How many units of credit the user is looking for.
+     *                       Some or all of this may be granted.
+     * @param inputSessionId - a Unique ID for a session. A negative number means a
+     *                       new session.
+     * @param txnId          - A unique ID for the network call. This is needed so
+     *                       we can tell if a transaction completed, but didn't get
+     *                       back to the client.
      * @return
      * @throws VoltAbortException
      */
@@ -114,7 +118,8 @@ public class ReportQuotaUsage extends VoltProcedure {
         voltQueueSQL(getUserBalance, sessionId, userId);
         voltQueueSQL(getCurrentlyAllocated, userId);
 
-        // The first time we're called we won't have spent anything, we'll be reserving credit.
+        // The first time we're called we won't have spent anything, we'll be reserving
+        // credit.
         if (amountSpent != 0) {
             voltQueueSQL(reportFinancialEvent, userId, amountSpent, txnId, decision);
         }

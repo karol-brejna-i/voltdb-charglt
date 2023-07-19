@@ -24,59 +24,60 @@ package org.voltdb.voltutil.stats;
  */
 
 /**
- * Stores a histogram of 'something', where buckets can be incremented by arbitrary amounts.
+ * Stores a histogram of 'something', where buckets can be incremented by
+ * arbitrary amounts.
  */
 public class SizeHistogram {
 
-	String description = "";
-	String name = "";
+    String description = "";
+    String name = "";
 
-	int[] theHistogram = new int[0];
-	String[] theHistogramComment = new String[0];
+    int[] theHistogram = new int[0];
+    String[] theHistogramComment = new String[0];
 
-	public SizeHistogram(String name, int size) {
-		this.name = name;
-		theHistogram = new int[size];
-		theHistogramComment = new String[size];
-	}
+    public SizeHistogram(String name, int size) {
+        this.name = name;
+        theHistogram = new int[size];
+        theHistogramComment = new String[size];
+    }
 
-	public void inc(int size, String comment) {
+    public void inc(int size, String comment) {
 
-		if (size >= 0 && size < theHistogram.length) {
-			theHistogram[size]++;
-			theHistogramComment[size] = comment;
-		} else if (size >= theHistogram.length) {
-			theHistogram[theHistogram.length - 1]++;
-			theHistogramComment[theHistogram.length - 1] = comment;
-		}
-	}
+        if (size >= 0 && size < theHistogram.length) {
+            theHistogram[size]++;
+            theHistogramComment[size] = comment;
+        } else if (size >= theHistogram.length) {
+            theHistogram[theHistogram.length - 1]++;
+            theHistogramComment[theHistogram.length - 1] = comment;
+        }
+    }
 
-	@Override
-	public String toString() {
-		StringBuffer b = new StringBuffer(name);
-		b.append(" ");
-		b.append(description);
-		b.append(" ");
+    @Override
+    public String toString() {
+        StringBuffer b = new StringBuffer(name);
+        b.append(" ");
+        b.append(description);
+        b.append(" ");
 
-		for (int i = 0; i < theHistogram.length; i++) {
-			if (theHistogram[i] > 0) {
-				b.append(System.lineSeparator());
-				b.append(i);
-				b.append(' ');
-				b.append(theHistogram[i]);
+        for (int i = 0; i < theHistogram.length; i++) {
+            if (theHistogram[i] > 0) {
+                b.append(System.lineSeparator());
+                b.append(i);
+                b.append(' ');
+                b.append(theHistogram[i]);
 
-			}
-		}
+            }
+        }
 
-		return b.toString();
-	}
+        return b.toString();
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 }

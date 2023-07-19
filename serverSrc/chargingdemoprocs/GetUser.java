@@ -29,7 +29,7 @@ import org.voltdb.VoltTable;
 
 public class GetUser extends VoltProcedure {
 
-	// @formatter:off
+    // @formatter:off
 
 	public static final SQLStmt getUser = new SQLStmt("SELECT * FROM user_table WHERE userid = ?;");
 	public static final SQLStmt getUserUsage = new SQLStmt(
@@ -40,21 +40,21 @@ public class GetUser extends VoltProcedure {
 
 	// @formatter:on
 
-	/**
-	 * Gets all the information we have about a user.
-	 *
-	 * @param userId
-	 * @return
-	 * @throws VoltAbortException
-	 */
-	public VoltTable[] run(long userId) throws VoltAbortException {
+    /**
+     * Gets all the information we have about a user.
+     *
+     * @param userId
+     * @return
+     * @throws VoltAbortException
+     */
+    public VoltTable[] run(long userId) throws VoltAbortException {
 
-		voltQueueSQL(getUser, userId);
-		voltQueueSQL(getUserUsage, userId);
-		voltQueueSQL(getUserBalance, userId);
-		voltQueueSQL(getAllTxn, userId);
+        voltQueueSQL(getUser, userId);
+        voltQueueSQL(getUserUsage, userId);
+        voltQueueSQL(getUserBalance, userId);
+        voltQueueSQL(getAllTxn, userId);
 
-		return voltExecuteSQL(true);
+        return voltExecuteSQL(true);
 
-	}
+    }
 }

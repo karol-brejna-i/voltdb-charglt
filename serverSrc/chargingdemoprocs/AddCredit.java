@@ -117,7 +117,7 @@ public class AddCredit extends VoltProcedure {
                 String oldestTxnId = userAndTxn[2].getString("user_txn_id");
                 voltQueueSQL(deleteOldTxn, userId, oldestTxnId);
             }
-         }
+        }
 
         voltQueueSQL(getUserBalance, userId);
         voltQueueSQL(getCurrrentlyAllocated, userId);
