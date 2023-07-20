@@ -302,7 +302,9 @@ public class SafeHistogramCache {
                 theHistogramMap.put(type, h);
             }
 
-            int latency = (int) ((System.nanoTime() / 1000) - start);
+            final long now = System.nanoTime() / 1000;
+            
+            int latency = (int) (now - start);
 
             h.report(latency, comment, count);
 
