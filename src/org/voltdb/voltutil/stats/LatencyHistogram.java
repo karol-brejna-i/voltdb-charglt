@@ -49,7 +49,7 @@ public class LatencyHistogram {
 
     /**
      * Whether we have 'rolled over' - reached Integer.MAX_VALUE for any counter.
-     * 
+     *
      * @see resetLatency
      */
     boolean isRolledOver = false;
@@ -74,9 +74,13 @@ public class LatencyHistogram {
      */
     int maxUsedSize = 0;
 
+    long underReports = 0;
+
+    long overReports = 0;
+
     /**
      * Create a histogram of up to maxSize
-     * 
+     *
      * @param maxSize
      */
     public LatencyHistogram(int maxSize) {
@@ -85,7 +89,7 @@ public class LatencyHistogram {
 
     /**
      * Create a named histogram of up to maxSize
-     * 
+     *
      * @param maxSize
      */
     public LatencyHistogram(String name, int maxSize) {
@@ -94,7 +98,7 @@ public class LatencyHistogram {
 
     /**
      * Initialize histogram elements
-     * 
+     *
      * @param name
      * @param maxSize
      */
@@ -106,10 +110,6 @@ public class LatencyHistogram {
         latencyHistogram = new double[maxSize];
         latencyComment = new String[maxSize];
 
-        for (int i = 0; i < latencyComment.length; i++) {
-            latencyComment[i] = "";
-        }
-
         resetLatency();
 
     }
@@ -118,18 +118,25 @@ public class LatencyHistogram {
      * reset latency stats to zero. Called at start, on demand, and on rollover.
      */
     public void resetLatency() {
+        
         for (int i = 0; i < maxSize; i++) {
             latencyHistogram[i] = 0;
         }
 
+        for (int i = 0; i < latencyComment.length; i++) {
+            latencyComment[i] = "";
+        }
+
         reports = 0;
         maxUsedSize = 0;
+        underReports = 0;
+        overReports = 0;
     }
 
     /**
      * Report a latency measurement. If it's >= maxSize it goes into the last
      * element. Negative values are forced to zero.
-     * 
+     *
      * @param latency
      * @param comment
      */
@@ -140,7 +147,7 @@ public class LatencyHistogram {
     /**
      * Report a latency measurement. If it's >= maxSize it goes into the last
      * element. Negative values are forced to zero.
-     * 
+     *
      * @param latency
      * @param comment
      * @param howmany
@@ -150,62 +157,39 @@ public class LatencyHistogram {
         reports += howMany;
 
         if (latency < 0) {
+            underReports++;
             latency = 0;
+        } else if (latency >= maxSize) {
+            overReports++;
+            latency = maxSize - 1;
         }
 
-        // Does this fit into our histogram?
-        if (latency < maxSize) {
+        // Can we actually add howMany to the value?
+        if ((latencyHistogram[latency] + howMany) < Integer.MAX_VALUE) {
 
-            // Can we actually add howMany to the value?
-            if ((latencyHistogram[latency] + howMany) < Integer.MAX_VALUE) {
+            latencyHistogram[latency] += howMany;
 
-                latencyHistogram[latency] += howMany;
-
-                if (maxUsedSize < latency) {
-                    maxUsedSize = latency;
-                }
-
-                // We can't - time for a rollover!
-            } else {
-                isRolledOver = true;
-                resetLatency();
+            if (maxUsedSize < latency) {
+                maxUsedSize = latency;
             }
 
+            // We can't - time for a rollover!
         } else {
-
-            // Latencies that don't fit into histogram get squeezed into last bucket.
-            if ((latencyHistogram[maxSize - 1] + howMany) < Integer.MAX_VALUE) {
-
-                latencyHistogram[maxSize - 1] += howMany;
-
-                if (maxUsedSize != maxSize - 1) {
-                    maxUsedSize = maxSize - 1;
-                }
-
-            } else {
-                isRolledOver = true;
-                resetLatency();
-            }
-
+            isRolledOver = true;
+            resetLatency();
         }
 
         // Update comment, if it makes sense to do so
-        if (comment != null && comment.length() > 0) {
-            if (latency < maxSize) {
-                if (latencyHistogram[latency] < Integer.MAX_VALUE) {
-                    latencyComment[latency] = comment;
-                }
+        if (comment != null && comment.length() > 0 && latencyComment[latency].length() == 0) {
+            latencyComment[latency] = comment;
 
-            } else {
-                latencyComment[maxSize - 1] = comment;
-            }
         }
 
     }
 
     /**
      * Report latency, assuming startTime is relative to now...
-     * 
+     *
      * @param startTime
      * @param comment
      */
@@ -219,7 +203,7 @@ public class LatencyHistogram {
 
     /**
      * Inspect a specific latency value
-     * 
+     *
      * @param idx
      * @return
      */
@@ -235,7 +219,7 @@ public class LatencyHistogram {
 
     /**
      * Change a specific latency value.
-     * 
+     *
      * @param idx
      * @param value
      */
@@ -262,7 +246,7 @@ public class LatencyHistogram {
 
     /**
      * Change reports number. This could break things.
-     * 
+     *
      * @param reports
      */
     public void pokeReports(long reports) {
@@ -295,7 +279,7 @@ public class LatencyHistogram {
     /**
      * Assuming this is, in fact latency, return how may milliseconds are needed to
      * 'cover' a given percentage.
-     * 
+     *
      * @param pct
      * @return how many reports are <= pct
      */
@@ -390,6 +374,16 @@ public class LatencyHistogram {
             b.append(" ROLLED OVER");
         }
 
+        if (underReports > 0) {
+            b.append(" Reports <0 ");
+            b.append(underReports);
+        }
+
+        if (overReports > 0) {
+            b.append(" Reports <= maxsize ");
+            b.append(overReports);
+        }
+
         return b.toString();
     }
 
@@ -430,7 +424,7 @@ public class LatencyHistogram {
      * <p>
      * Say you have a lifecycle that goes a->b->c->d. You have histograms for a->d
      * and b->c. By subtracting them you can create a->b+c->d
-     * 
+     *
      * @param name       Name for your new histogram
      * @param bigThing   thing that has the bigger values
      * @param smallThing thing that has the smaller values
@@ -465,7 +459,7 @@ public class LatencyHistogram {
 
     /**
      * Update description
-     * 
+     *
      * @param description
      */
     public void setDescription(String description) {
@@ -482,6 +476,62 @@ public class LatencyHistogram {
         }
 
         return false;
+    }
+
+    /**
+     * @return the nUMFORMAT_DECIMAL
+     */
+    public String getNUMFORMAT_DECIMAL() {
+        return NUMFORMAT_DECIMAL;
+    }
+
+    /**
+     * @return the nUMFORMAT_INTEGER
+     */
+    public String getNUMFORMAT_INTEGER() {
+        return NUMFORMAT_INTEGER;
+    }
+
+    /**
+     * @return the maxSize
+     */
+    public int getMaxSize() {
+        return maxSize;
+    }
+
+    /**
+     * @return the isRolledOver
+     */
+    public boolean isRolledOver() {
+        return isRolledOver;
+    }
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @return the reports
+     */
+    public long getReports() {
+        return reports;
+    }
+
+    /**
+     * @return the underReports
+     */
+    public long getUnderReports() {
+        return underReports;
+    }
+
+    /**
+     * @return the overReports
+     */
+    public long getOverReports() {
+        return overReports;
     }
 
 }

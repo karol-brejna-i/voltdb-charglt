@@ -94,7 +94,7 @@ do
                 [ -s "${FAILED_FILE}" ]
         then
 		rm ${FAILED_FILE}
-                echo $FAILED
+                echo FAILED
                 exit 1
         fi
   
