@@ -3,7 +3,6 @@
 INALLOW=`ethtool -S ens5 | grep bw_in_allowance_exceeded | awk -F: '{ print $2 }'`
 OUTALLOW=`ethtool -S ens5 | grep bw_out_allowance_exceeded | awk -F: '{ print $2 }'`
 
-echo $0
 
 if 
 	[ "$INALLOW" -gt 0 ]
