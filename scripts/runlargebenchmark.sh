@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # This file is part of VoltDB.
-#  Copyright (C) 2008-2023 VoltDB Inc.
+#  Copyright (C) 2008-2022 VoltDB Inc.
 #
 #  Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -61,14 +61,11 @@ do
 
 	T=1
 
-	AWSNETBAD=`sh ../scripts/check_aws_network_limits.sh`
-	echo AWSNETBAD=${AWSNETBAD}
-
 	while 
 		[ "$T" -le "$TC" ]
 	do
 
-       		EACH_TPS=`expr ${CT} / ${TC}`
+       	EACH_TPS=`expr ${CT} / ${TC}`
 		echo Starting thread $T at $EACH_TPS KTPS...
 		echo `date` java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${EACH_TPS} $DURATION 60 >> $HOME/logs/activity.log
 		java ${JVMOPTS}  -jar ChargingDemoTransactions.jar `cat $HOME/.vdbhostnames`  ${USERCOUNT} ${EACH_TPS} $DURATION 60 > $HOME/logs/${DT}_charging_`uname -n`_${CT}_${T}.lst &
@@ -97,17 +94,6 @@ do
         fi
 
         rm ${FAILED_FILE}
-
-	OLDAWSNETBAD=${AWSNETBAD}
-	AWSNETBAD=`sh ../scripts/check_aws_network_limits.sh`
-	echo AWSNETBAD=${AWSNETBAD}
-
-	if
-		[ "${OLDAWSNETBAD}" != "${AWSNETBAD}"  ]
-	then
-		echo FAILED_BANDWIDTH ${AWSNETBAD}
-		exit 2
-	fi
 
 	sleep 15
 

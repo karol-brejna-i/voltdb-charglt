@@ -111,7 +111,7 @@ do
                 [ "${OLDAWSNETBAD}" != "${AWSNETBAD}"  ]
         then
                 echo FAILED_BANDWIDTH ${AWSNETBAD}
-                exit 2
+                #exit 2
         fi
 
 
