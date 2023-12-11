@@ -55,6 +55,9 @@ public class ChargingDemoTransactions extends BaseChargingDemo {
 
         // How often we do global queries...
         int globalQueryFreqSeconds = Integer.parseInt(args[4]);
+        
+        // Extra delay for testing really slow hardware
+        int extraMs = getExtraMsIfSet();
 
         try {
             // A VoltDB Client object maintains multiple connections to all the
@@ -63,7 +66,7 @@ public class ChargingDemoTransactions extends BaseChargingDemo {
 
             clearUnfinishedTransactions(mainClient);
 
-            boolean ok = runTransactionBenchmark(userCount, tpMs, durationSeconds, globalQueryFreqSeconds, mainClient);
+            boolean ok = runTransactionBenchmark(userCount, tpMs, durationSeconds, globalQueryFreqSeconds, mainClient, extraMs);
 
             msg("Closing connection...");
             mainClient.close();

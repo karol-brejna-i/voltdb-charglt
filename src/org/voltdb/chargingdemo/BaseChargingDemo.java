@@ -84,6 +84,8 @@ public abstract class BaseChargingDemo {
     public static SafeHistogramCache shc = SafeHistogramCache.getInstance();
 
     public static final String UNABLE_TO_MEET_REQUESTED_TPS = "UNABLE_TO_MEET_REQUESTED_TPS";
+    public static final String EXTRA_MS = "EXTRA_MS";
+
 
     /**
      * Print a formatted message.
@@ -338,6 +340,7 @@ public abstract class BaseChargingDemo {
      * @param jsonsize
      * @param mainClient
      * @param deltaProportion
+     * @param extraMs
      * @return true if >=90% of requested throughput was achieved.
      * @throws InterruptedException
      * @throws IOException
@@ -345,7 +348,7 @@ public abstract class BaseChargingDemo {
      * @throws ProcCallException
      */
     protected static boolean runKVBenchmark(int userCount, int tpMs, int durationSeconds, int globalQueryFreqSeconds,
-            int jsonsize, Client mainClient, int deltaProportion)
+            int jsonsize, Client mainClient, int deltaProportion, int extraMs)
             throws InterruptedException, IOException, NoConnectionsException, ProcCallException {
 
         long lastGlobalQueryMs = 0;
@@ -382,7 +385,9 @@ public abstract class BaseChargingDemo {
                     Thread.sleep(0, 50000);
 
                 }
-
+                
+                sleepExtraMSIfNeeded(extraMs);
+                
                 currentMs = System.currentTimeMillis();
                 tpThisMs = 0;
             }
@@ -492,6 +497,21 @@ public abstract class BaseChargingDemo {
     }
 
     /**
+     * Used when we need to really slow down below 1 tx per ms.. 
+     * @param extraMs an arbitrary extra delay.
+     */
+    private static void sleepExtraMSIfNeeded(int extraMs) {
+        if (extraMs > 0) {
+            try {
+                Thread.sleep(extraMs);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        
+    }
+
+    /**
      * Convenience method to remove unneeded records storing old allotments of
      * credit.
      *
@@ -540,6 +560,7 @@ public abstract class BaseChargingDemo {
      * @param globalQueryFreqSeconds how often we check on global stats and a single
      *                               user
      * @param mainClient
+     * @param extraMS
      * @return true if within 90% of targeted TPS
      * @throws InterruptedException
      * @throws IOException
@@ -547,7 +568,7 @@ public abstract class BaseChargingDemo {
      * @throws ProcCallException
      */
     protected static boolean runTransactionBenchmark(int userCount, int tpMs, int durationSeconds,
-            int globalQueryFreqSeconds, Client mainClient)
+            int globalQueryFreqSeconds, Client mainClient, int extraMs)
             throws InterruptedException, IOException, NoConnectionsException, ProcCallException {
 
         // Used to track changes and be unique when we are running multiple threads
@@ -587,6 +608,8 @@ public abstract class BaseChargingDemo {
                     Thread.sleep(0, 50000);
 
                 }
+                
+                sleepExtraMSIfNeeded(extraMs);
 
                 currentMs = System.currentTimeMillis();
                 tpThisMs = 0;
@@ -712,6 +735,24 @@ public abstract class BaseChargingDemo {
      */
     private static long getNewLoyaltyCardNumber(Random r) {
         return System.currentTimeMillis() % 1000000;
+    }
+    
+    /**
+     * get EXTRA_MS env variable if set
+     * @return extraMs
+     */
+    public static int getExtraMsIfSet() {
+        
+        int extraMs = 0;
+
+        String ExtraMsEnv = System.getenv(EXTRA_MS);
+        
+        if (ExtraMsEnv != null && ExtraMsEnv.length() > 0) {
+            msg("EXTRA_MS is '" + extraMs + "'" );
+            extraMs = Integer.parseInt(ExtraMsEnv);
+        }
+        
+        return extraMs;
     }
 
 }

@@ -29,6 +29,7 @@ import org.voltdb.client.Client;
 
 public class ChargingDemoKVStore extends BaseChargingDemo {
 
+
     /**
      * @param args
      */
@@ -60,7 +61,10 @@ public class ChargingDemoKVStore extends BaseChargingDemo {
         int jsonsize = Integer.parseInt(args[5]);
 
         int deltaProportion = Integer.parseInt(args[6]);
-
+        
+        // Extra delay for testing really slow hardware
+        int extraMs = getExtraMsIfSet();
+ 
         try {
             // A VoltDB Client object maintains multiple connections to all the
             // servers in the cluster.
@@ -68,7 +72,7 @@ public class ChargingDemoKVStore extends BaseChargingDemo {
 
             unlockAllRecords(mainClient);
             boolean ok = runKVBenchmark(userCount, tpMs, durationSeconds, globalQueryFreqSeconds, jsonsize, mainClient,
-                    deltaProportion);
+                    deltaProportion, extraMs);
 
             msg("Closing connection...");
             mainClient.close();
@@ -85,5 +89,7 @@ public class ChargingDemoKVStore extends BaseChargingDemo {
         }
 
     }
+
+  
 
 }
