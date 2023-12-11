@@ -745,11 +745,11 @@ public abstract class BaseChargingDemo {
         
         int extraMs = 0;
 
-        String ExtraMsEnv = System.getenv(EXTRA_MS);
+        String extraMsEnv = System.getenv(EXTRA_MS);
         
-        if (ExtraMsEnv != null && ExtraMsEnv.length() > 0) {
-            msg("EXTRA_MS is '" + extraMs + "'" );
-            extraMs = Integer.parseInt(ExtraMsEnv);
+        if (extraMsEnv != null && extraMsEnv.length() > 0) {
+            msg("EXTRA_MS is '" + extraMsEnv + "'" );
+            extraMs = Integer.parseInt(extraMsEnv);
         }
         
         return extraMs;
