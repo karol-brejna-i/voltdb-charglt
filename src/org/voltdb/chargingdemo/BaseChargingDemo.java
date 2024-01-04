@@ -672,8 +672,7 @@ public abstract class BaseChargingDemo {
         msg("Processed " + tranCount + " transactions in " + elapsedTimeMs + " milliseconds");
 
         double tps = tranCount;
-        tps = tps / elapsedTimeMs;
-        tps = (long) tps * 1000;
+        tps = tps / (elapsedTimeMs / 1000);
 
         msg("TPS = " + tps);
 
