@@ -483,7 +483,7 @@ public abstract class BaseChargingDemo {
 
         double tps = tranCount;
         tps = tps / (System.currentTimeMillis() - startMsRun);
-        tps = (long) tps * 1000;
+        tps = tps * 1000;
 
         reportRunLatencyStats(tpMs, tps);
 
