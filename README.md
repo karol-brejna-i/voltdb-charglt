@@ -108,7 +108,7 @@ We used a cluster with the following configuration:
 
 - Run 166,666 or more transactions per second.
 - 99th percentile latency needs to be 10ms or under.
-- The transactions will be  80% &quot;[Report Usage and Reserve More](https://github.com/srmadscience/voltdb-charglt/blob/master/src/chargingdemoprocs/ReportQuotaUsage.java)&quot; and 20% &quot;[Add Credit](https://github.com/srmadscience/voltdb-charglt/blob/master/src/chargingdemoprocs/AddCredit.java)&quot;
+- The transactions will be  80% &quot;[Report Usage and Reserve More](https://github.com/srmadscience/voltdb-charglt/blob/master/erverSrc/chargingdemoprocs/ReportQuotaUsage.java)&quot; and 20% &quot;[Add Credit](https://github.com/srmadscience/voltdb-charglt/blob/master/serverSrc/chargingdemoprocs/AddCredit.java)&quot;
 - We will also call &quot;showCurrentAllocations&quot; and &quot;getTotalBalance&quot; every 10 seconds.
 
 ### Steps
